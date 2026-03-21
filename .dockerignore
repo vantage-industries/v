@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+.gitmodules
+
+# Documentation
+*.md
+docs/
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Yocto build artifacts (large, not needed inside image)
+bitbake-builds/
+cache/
+downloads/
+sstate-cache/
+tmp*/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.log

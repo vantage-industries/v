@@ -1,0 +1,50 @@
+# Yocto/OE Build artifacts
+downloads/
+sstate-cache/
+tmp/
+buildhistory/
+cache/
+
+# Keep .gitignore files but ignore everything else in bitbake-builds
+bitbake-builds/**
+!bitbake-builds/.gitignore
+!bitbake-builds/vantageos/
+!bitbake-builds/vantageos/build/
+!bitbake-builds/vantageos/build/.gitignore
+!bitbake-builds/vantageos/layers/
+!bitbake-builds/vantageos/layers/.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pylint.d
+*.egg-info/
+.pytest_cache/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Documentation (not needed in builds)
+*.md
+!README.md
+docs/
+
+# Temporary files
+tmp*/
+*.tmp

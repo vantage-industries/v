@@ -1,0 +1,28 @@
+services:
+  yocto-builder:
+    build:
+      context: .
+      args:
+        USER_ID: ${HOST_UID:-1000}
+        GROUP_ID: ${HOST_GID:-1000}
+        USER_NAME: ${HOST_USER:-builder}
+    image: yocto-builder:latest
+    container_name: yocto-build-env
+    volumes:
+      - ./bitbake-builds:/home/builder/bitbake-builds
+      - ./bitbake:/home/builder/bitbake:ro
+    environment:
+      - LANG=en_US.UTF-8
+      - LC_ALL=en_US.UTF-8
+      - HOME=/home/builder
+    working_dir: /home/builder
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    privileged: true
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          memory: 32G
+        reservations:
+          memory: 16G
