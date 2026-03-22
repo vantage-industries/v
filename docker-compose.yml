@@ -17,7 +17,6 @@ services:
       - HOME=/home/builder
     working_dir: /home/builder
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-    privileged: true
     stdin_open: true
     tty: true
     deploy:

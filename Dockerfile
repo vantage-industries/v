@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-# Install Yocto build host packages per official documentation
+# Install Yocto build host packages per official documentation + tmux for bitbake
 RUN apt-get update && apt-get install -y \
     build-essential \
     chrpath \
@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y \
     zstd \
     rpcbind \
     sudo \
+    tmux \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure locale

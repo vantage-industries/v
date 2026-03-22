@@ -1,0 +1,26 @@
+# VantageOS Custom Layer
+
+This layer contains VantageOS-specific customizations for OpenEmbedded/Yocto builds.
+
+## Contents
+
+- `conf/layer.conf` - Layer configuration
+- `recipes-core/images/` - Custom image recipes
+- `recipes-example/` - Example recipe structure
+
+## Adding this layer
+
+Add the layer to your `bblayers.conf`:
+
+```bash
+bitbake-layers add-layer /path/to/layers/meta-vantageos
+```
+
+## Compatibility
+
+Tested with Yocto/OpenEmbedded releases:
+- Kirkstone (4.0)
+- Langdale (4.1)
+- Mickledore (4.2)
+- Nanbield (4.3)
+- Scarthgap (5.0)
