@@ -1,129 +1,52 @@
-# =============================================================================
-# Yocto / OpenEmbedded Build Artifacts
-# =============================================================================
-
-# Main build temporary directory (defined by TMPDIR)
+# Build artifacts
+build/
+build-*/
 tmp/
 tmp-*/
-tmp-intel-poky-linux/
+work/
+work-*/
+work-shared/
+rootfs/
+rootfs-*/
+deploy/
+deploy-*/
+buildhistory/
 
-# Build output directories
-build/
-build-x86_64-linux/
-build-aarch64-poky-linux/
-build-arm-poky-linux/
-build-poky-linux-gnueabi/
-build-poky-linux/
-
-# Shared state cache and downloads (often placed outside TMPDIR)
+# Cache
+cache/
 sstate-cache/
 sstate-cache-*/
 downloads/
 downloads-*/
 
-# BitBake cache directory
-cache/
-*.sqlite
-
-# Stamp files (markers for completed tasks)
-stamps/
-stamps-*/
-
-# Work directories (unpacked source and build work)
-work/
-work-*/
-work-shared/
-
-# Root filesystems
-rootfs/
-rootfs-*/
-
-# Deploy directories (built artifacts)
-deploy/
-deploy-*/
-deploy/images/
-deploy/deb/
-deploy/rpm/
-deploy/ipk/
-
-# Build history (if enabled)
-buildhistory/
-
-# Log files and directories
+# Logs
 *.log
 logs/
 log/
 toasterlogs/
 
-# =============================================================================
 # Python
-# =============================================================================
 __pycache__/
 *.py[cod]
-*.pyo
-*.pylint.d
 *.egg-info/
 .pytest_cache/
-.tox/
-venv/
-.eggs/
 
-# =============================================================================
-# IDE and Editor Files
-# =============================================================================
+# IDE
 .vscode/
 .idea/
 *.swp
-*.swo
 *~
 .DS_Store
-Thumbs.db
-*.bak
 
-# =============================================================================
-# Environment and Secrets
-# =============================================================================
+# Secrets
 .env
 .env.local
-.env.*.local
-*.local
 
-# =============================================================================
-# BitBake Daemon Files
-# =============================================================================
+# BitBake
 bitbake-cookerdaemon.log
 .persist/
 .lock
 
-# =============================================================================
-# Task and dependency files (generated during build)
-# =============================================================================
-pn-buildlist
-task-depends.dot
-*.dot
-
-# =============================================================================
-# Documentation build outputs (if building docs)
-# =============================================================================
-_doc/
-doc/_build/
-doc/html/
-sphinx-static/
-
-# =============================================================================
-# Temporary Files
-# =============================================================================
-*.tmp
-*.temp
-*.pid
-
-# =============================================================================
-# bitbake - Build engine (should be cloned separately)
-# =============================================================================
-bitbake/
-
-# =============================================================================
-# bitbake-builds directory - keep structure but ignore contents
-# =============================================================================
+# Build output directory
 bitbake-builds/**
 !bitbake-builds/
