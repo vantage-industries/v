@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "description": "VantageOS - Custom Linux distribution built with Yocto",
+  "sources": {
+    "bitbake": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://github.com/openembedded/bitbake.git"
+          }
+        },
+        "branch": "2.16",
+        "rev": "2.16"
+      }
+    },
+    "openembedded-core": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://github.com/openembedded/openembedded-core.git"
+          }
+        },
+        "branch": "whinlatter",
+        "rev": "whinlatter"
+      }
+    },
+    "yocto-docs": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://git.yoctoproject.org/yocto-docs"
+          }
+        },
+        "branch": "whinlatter",
+        "rev": "whinlatter"
+      }
+    },
+    "meta-vantageos": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://github.com/vantageos/meta-vantageos.git"
+          }
+        },
+        "branch": "main",
+        "rev": "main"
+      }
+    }
+  },
+  "bitbake-setup": {
+    "configurations": [
+      {
+        "name": "vantageos",
+        "description": "VantageOS",
+        "setup-dir-name": "vantageos",
+        "bb-layers": [
+          "openembedded-core/meta",
+          "meta-vantageos"
+        ],
+        "oe-fragments-one-of": {
+          "machine": {
+            "description": "Target machines",
+            "options": ["machine/qemuarm64"]
+          }
+        }
+      }
+    ]
+  }
+}

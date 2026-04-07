@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "sources": {
+    "bitbake": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://github.com/openembedded/bitbake.git"
+          }
+        }
+      }
+    },
+    "openembedded-core": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://github.com/openembedded/openembedded-core.git"
+          }
+        }
+      }
+    }
+  }
+}

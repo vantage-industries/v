@@ -12,17 +12,21 @@ cd vantageos
 # 2. Build Docker image
 ./yocto-docker.sh build
 
-# 3. Initialize bitbake
-docker compose run --rm yocto-builder bash -c \
-  "./bitbake/bin/bitbake-setup init --non-interactive oe-nodistro-whinlatter nodistro machine/qemuarm64"
+# 3. Initialize VantageOS build environment
+./yocto-docker.sh init
 
 # 4. Build (takes 30-60 min first time)
-docker compose run --rm yocto-builder bash -c \
-  "source bitbake-builds/oe-nodistro-whinlatter/build/init-build-env && bitbake core-image-base"
+./yocto-docker.sh bitbake core-image-base
 
 # 5. Run in QEMU
 ./yocto-docker.sh runqemu
 ```
+
+## Available Machines
+
+- `qemuarm64` - QEMU ARM64 emulator (default)
+
+To build for a different machine, edit `bitbake-builds/vantageos/build/conf/local.conf` and change the `MACHINE` variable.
 
 ## Requirements
 
@@ -34,7 +38,7 @@ docker compose run --rm yocto-builder bash -c \
 
 - `bitbake/` - Yocto build system (git submodule)
 - `layers/` - Custom Yocto layers
-- `config/` - Build configurations
+- `vantageos.conf.json` - VantageOS build configuration (GitHub mirrors, custom setup)
 - `bitbake-builds/` - Build output directory
 
 ## Updating

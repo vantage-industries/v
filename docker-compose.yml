@@ -11,6 +11,7 @@ services:
     volumes:
       - ./bitbake-builds:/home/builder/bitbake-builds
       - ./bitbake:/home/builder/bitbake:ro
+      - ./layers:/home/builder/layers:ro
     environment:
       - LANG=en_US.UTF-8
       - LC_ALL=en_US.UTF-8
