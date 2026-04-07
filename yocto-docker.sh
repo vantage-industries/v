@@ -39,20 +39,15 @@ case "${1:-}" in
      "
     ;;
   
-     runqemu)
-       shift || true
-       echo "Running OS in QEMU..."
-       docker compose run --rm yocto-builder bash -c "
-         source ~/bitbake-builds/vantageos-vantageos-machine_qemuarm64/build/init-build-env 2>/dev/null || \
-         source ~/bitbake-builds/vantageos/build/init-build-env 2>/dev/null || true
-         # Remove zst file and update symlinks to use uncompressed ext4 image
-         cd ~/bitbake-builds/vantageos-vantageos-machine_qemuarm64/build/tmp/deploy/images/qemuarm64/
-         rm -f vantageos-image-qemuarm64.rootfs-20260407102403.ext4.zst
-         rm -f vantageos-image-qemuarm64.rootfs.ext4.zst
-         ln -sf vantageos-image-qemuarm64.rootfs.ext4 vantageos-image-qemuarm64.rootfs.ext4.zst
-         runqemu snapshot slirp "$@"
-       "
-       ;;
+   runqemu)
+     shift || true
+     echo "Running OS in QEMU..."
+     docker compose run --rm --service-ports yocto-builder bash -c "
+       source ~/bitbake-builds/vantageos-vantageos-machine_qemuarm64/build/init-build-env 2>/dev/null || \
+       source ~/bitbake-builds/vantageos/build/init-build-env 2>/dev/null || true
+       runqemu nographic snapshot slirp "$@"
+     "
+     ;;
   
   *)
     echo "Yocto Docker Build Helper"
