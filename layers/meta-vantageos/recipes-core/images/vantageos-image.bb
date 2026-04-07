@@ -4,6 +4,11 @@ LICENSE = "MIT"
 
 inherit core-image
 
-IMAGE_INSTALL_append = "packagegroup-core-boot packagegroup-base-extended"
+IMAGE_INSTALL:append = " \
+    packagegroup-core-boot \
+    packagegroup-base-extended \
+    vantageos-routing-config \
+    dropbear \
+"
 
 export IMAGE_BASENAME = "vantageos-image"
