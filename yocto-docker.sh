@@ -15,40 +15,40 @@ case "${1:-}" in
     echo "Building Yocto Docker image..."
     docker compose build --build-arg USER_ID=$HOST_UID --build-arg GROUP_ID=$HOST_GID --build-arg USER_NAME=$HOST_USER
     ;;
-  
+
   init)
     echo "Initializing VantageOS build environment..."
-    docker compose run --rm -v "$SCRIPT_DIR/vantageos.conf.json:/home/builder/vantageos.conf.json:ro" yocto-builder bash -c \
-      "./bitbake/bin/bitbake-setup init --non-interactive -L meta-vantageos /home/builder/layers/meta-vantageos /home/builder/vantageos.conf.json vantageos machine/qemuarm64"
+    docker compose run --rm yocto-builder bash -c \
+      "./bitbake/bin/bitbake-setup init --non-interactive -L meta-vantageos /home/builder/layers/meta-vantageos /home/builder/vantageos.conf.json vantageos machine/qemuarm64 --setup-dir-name vantageos"
     echo ""
     echo "VantageOS build environment initialized!"
-    echo "To build: ./yocto-docker.sh bitbake core-image-base"
+    echo "To build: ./yocto-docker.sh bitbake vantageos-image"
     ;;
-  
+
   shell)
     docker compose run --rm yocto-builder bash
     ;;
-  
+
   bitbake)
     shift
     echo "Running bitbake command: bitbake $*"
      docker compose run --rm yocto-builder bash -c "
-       source ~/bitbake-builds/vantageos-vantageos-machine_qemuarm64/build/init-build-env 2>/dev/null || \
-       source ~/bitbake-builds/vantageos/build/init-build-env 2>/dev/null || true
+       source ~/bitbake-builds/vantageos/build/init-build-env
        bitbake "$@"
      "
     ;;
-  
+
    runqemu)
      shift || true
      echo "Running OS in QEMU..."
      docker compose run --rm --service-ports yocto-builder bash -c "
-       source ~/bitbake-builds/vantageos-vantageos-machine_qemuarm64/build/init-build-env 2>/dev/null || \
-       source ~/bitbake-builds/vantageos/build/init-build-env 2>/dev/null || true
-       runqemu nographic snapshot slirp "$@"
+      source ~/bitbake-builds/vantageos/build/init-build-env
+      cd ~/bitbake-builds/vantageos/build/tmp/deploy/images/qemuarm64/
+      # Start QEMU with serial on telnet port 4444
+      runqemu nographic snapshot slirp serialstdio
      "
      ;;
-  
+
   *)
     echo "Yocto Docker Build Helper"
     echo ""
