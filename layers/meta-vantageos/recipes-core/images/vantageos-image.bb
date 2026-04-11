@@ -15,8 +15,10 @@ MACHINE_FEATURES:remove = "alsa"
 IMAGE_INSTALL = " \
     packagegroup-core-boot \
     vantageos-routing-config \
+    vantageos-suricata-config \
     dropbear \
     iptables \
+    suricata \
 "
 # packagegroup-base-extended
 
@@ -28,6 +30,7 @@ IMAGE_FEATURES:append = "empty-root-password allow-root-login serial-autologin-r
 
 # Manually enable dropbear service (don't use ssh-server-dropbear to avoid openssh deps)
 SYSTEMD_AUTO_ENABLE:dropbear = "enable"
+SYSTEMD_AUTO_ENABLE:suricata = "enable"
 INITSCRIPT_PACKAGES:append = " dropbear"
 INITSCRIPT_NAME:dropbear = "dropbear"
 INITSCRIPT_PARAMS:dropbear = "defaults 10"
