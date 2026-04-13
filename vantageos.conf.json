@@ -55,6 +55,8 @@
         "setup-dir-name": "vantageos",
         "bb-layers": [
           "openembedded-core/meta",
+          "meta-openembedded/meta-oe",
+          "meta-openembedded/meta-networking",
           "meta-vantageos"
         ],
         "oe-fragments-one-of": {
