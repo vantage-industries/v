@@ -16,7 +16,8 @@ cd vantageos
 ./yocto-docker.sh init
 
 # 4. Build (takes 30-60 min first time)
-./yocto-docker.sh bitbake core-image-base
+#./yocto-docker.sh bitbake core-image-base
+./yocto-docker.sh bitbake vantageos-image
 
 # 5. Run in QEMU
 ./yocto-docker.sh runqemu

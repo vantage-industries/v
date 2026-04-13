@@ -3,6 +3,9 @@ FROM ubuntu:24.04
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Prevent hash changing on bitbake
+ENV PYTHONHASHSEED=0
+
 # Set locale
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
