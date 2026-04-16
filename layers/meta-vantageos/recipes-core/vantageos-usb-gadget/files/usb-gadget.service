@@ -1,0 +1,13 @@
+[Unit]
+Description=VantageOS USB Gadget
+After=systemd-modules-load.service
+Before=systemd-networkd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/usb-gadget.sh
+ExecStop=/bin/sh -c 'echo "" > /sys/kernel/config/usb_gadget/vantageos/UDC 2>/dev/null || true'
+
+[Install]
+WantedBy=sysinit.target

@@ -19,7 +19,7 @@ case "${1:-}" in
   init)
     echo "Initializing VantageOS build environment..."
     docker compose run --rm yocto-builder bash -c \
-      "./bitbake/bin/bitbake-setup init --non-interactive -L meta-vantageos /home/builder/layers/meta-vantageos /home/builder/vantageos.conf.json vantageos machine/qemuarm64 --setup-dir-name vantageos"
+      "./bitbake/bin/bitbake-setup init --non-interactive -L meta-vantageos /home/builder/layers/meta-vantageos /home/builder/vantageos.conf.json vantageos machine/raspberrypi5 --setup-dir-name vantageos"
     echo ""
     echo "VantageOS build environment initialized!"
     echo "To build: ./yocto-docker.sh bitbake vantageos-image"

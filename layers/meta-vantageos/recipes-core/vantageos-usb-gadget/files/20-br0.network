@@ -1,0 +1,13 @@
+[Match]
+Name=br0
+
+[Network]
+Address=192.168.7.2/24
+DHCPServer=yes
+LinkLocalAddressing=no
+
+[DHCPServer]
+PoolOffset=10
+PoolSize=50
+EmitDNS=yes
+DNS=8.8.8.8

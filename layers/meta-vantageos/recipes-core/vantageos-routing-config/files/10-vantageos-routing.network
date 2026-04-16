@@ -1,13 +1,11 @@
 [Match]
-Name=*
+Name=eth* en*
+Type=ether
 
 [Network]
+DHCP=yes
 IPForward=yes
 
-[Route]
-Gateway=192.168.1.1
-Destination=0.0.0.0/0
-
 [DHCP]
-UseRoutes=yes
 RouteMetric=100
+UseRoutes=yes

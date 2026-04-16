@@ -1,0 +1,14 @@
+[Unit]
+Description=VantageOS Hostapd AP
+After=systemd-networkd.service
+Wants=systemd-networkd.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5
+ExecStartPre=/bin/sh -c 'until ip link show wlan0 2>/dev/null; do sleep 2; done'
+ExecStart=/usr/sbin/hostapd /etc/hostapd/vantageos-hostapd.conf
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=VantageOS Router NAT Setup
+After=network-online.target vantageos-hostapd.service
+Wants=network-online.target vantageos-hostapd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/vantageos-routing-setup
+
+[Install]
+WantedBy=multi-user.target

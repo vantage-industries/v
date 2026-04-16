@@ -58,6 +58,17 @@
         "rev": "whinlatter"
       }
     },
+    "meta-raspberrypi": {
+      "git-remote": {
+        "remotes": {
+          "origin": {
+            "uri": "https://github.com/agherzan/meta-raspberrypi.git"
+          }
+        },
+        "branch": "whinlatter",
+        "rev": "whinlatter"
+      }
+    },
     
     "meta-vantageos": {
       "git-remote": {
@@ -84,12 +95,13 @@
           "meta-openembedded/meta-python",
           "meta-openembedded/meta-networking",
           "meta-security",
+          "meta-raspberrypi",
           "meta-vantageos"
         ],
         "oe-fragments-one-of": {
           "machine": {
             "description": "Target machines",
-            "options": ["machine/qemuarm64"]
+            "options": ["machine/qemuarm64", "machine/raspberrypi5"]
           }
         }
       }
