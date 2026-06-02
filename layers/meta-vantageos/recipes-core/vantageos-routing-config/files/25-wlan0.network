@@ -2,12 +2,13 @@
 Name=wlan0
 
 [Network]
-Address=192.168.8.1/24
+Address=192.168.88.1/24
 DHCPServer=yes
 LinkLocalAddressing=no
+RequiredForOnline=no
 
 [DHCPServer]
 PoolOffset=10
 PoolSize=50
 EmitDNS=yes
-DNS=8.8.8.8
+DNS=192.168.88.1

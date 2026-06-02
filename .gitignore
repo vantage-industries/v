@@ -50,3 +50,17 @@ bitbake-cookerdaemon.log
 # Build output directory
 bitbake-builds/**
 !bitbake-builds/
+
+# Control-plane app
+control-plane/node_modules/
+control-plane/frontend/node_modules/
+control-plane/frontend/dist/
+control-plane/frontend/.vite/
+control-plane/backend/.venv/
+control-plane/backend/.pytest_cache/
+control-plane/backend/.mypy_cache/
+control-plane/backend/.ruff_cache/
+control-plane/backend/*.db
+control-plane/backend/*.sqlite
+control-plane/result
+tailscale-keys

@@ -1,10 +1,11 @@
 [Match]
-Name=eth* en*
+Name=end0
 Type=ether
 
 [Network]
 DHCP=yes
 IPForward=yes
+RequiredForOnline=no
 
 [DHCP]
 RouteMetric=100

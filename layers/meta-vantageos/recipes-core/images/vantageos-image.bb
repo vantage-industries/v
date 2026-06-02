@@ -7,9 +7,14 @@ inherit extrausers
 
 DEPENDS:append = " openssl-native "
 
-# Reproducible root password configuration
-PASSWD_SALT = "vantsalt"
-ROOT_PASSWORD = "vantageos"
+# Dev access is opt-in so production images do not ship with
+# a known root password, serial autologin, or baked SSH keys.
+VANTAGEOS_ENABLE_DEV_ACCESS ?= "0"
+VANTAGEOS_ROOT_PASSWORD ?= ""
+VANTAGEOS_SSH_PUBLIC_KEY ?= ""
+VANTAGEOS_ENABLE_CAPTIVE_PORTAL ?= "1"
+VANTAGEOS_PORTAL_HOSTNAME ?= "vantageos.local"
+VANTAGEOS_PORTAL_IP ?= "192.168.88.1"
 
 MACHINE_FEATURES:remove = "alsa"
 
@@ -19,7 +24,9 @@ IMAGE_INSTALL = " \
     vantageos-routing-config \
     vantageos-suricata-config \
     dropbear \
+    dnsmasq \
     iptables \
+    vantageos-control-plane \
     suricata \
     hostapd \
     kernel-modules \
@@ -33,32 +40,76 @@ IMAGE_INSTALL = " \
 DISTRO = "vantageos"
 export IMAGE_BASENAME = "vantageos-image"
 
-# Enable root login (dropbear is installed manually below)
-IMAGE_FEATURES:append = "allow-root-login serial-autologin-root"
+IMAGE_FEATURES:append = "${@bb.utils.contains('VANTAGEOS_ENABLE_DEV_ACCESS', '1', ' allow-root-login serial-autologin-root', '', d)}"
 
-# Set root password reproducibly during rootfs creation
-vantageos_set_root_password() {
-    local hash
-    hash=$(openssl passwd -1 -salt ${PASSWD_SALT} ${ROOT_PASSWORD})
-    sed -i "s|^root:[^:]*:|root:${hash}:|" ${IMAGE_ROOTFS}${sysconfdir}/shadow
+vantageos_configure_dev_access() {
+    if [ "${VANTAGEOS_ENABLE_DEV_ACCESS}" != "1" ]; then
+        return 0
+    fi
+
+    if [ -n "${VANTAGEOS_ROOT_PASSWORD}" ]; then
+        hash=$(openssl passwd -1 -salt vantsalt "${VANTAGEOS_ROOT_PASSWORD}")
+        sed -i "s|^root:[^:]*:|root:${hash}:|" ${IMAGE_ROOTFS}${sysconfdir}/shadow
+    fi
+
+    if [ -n "${VANTAGEOS_SSH_PUBLIC_KEY}" ]; then
+        install -d -m 0700 ${IMAGE_ROOTFS}${sysconfdir}/dropbear
+        printf '%s\n' "${VANTAGEOS_SSH_PUBLIC_KEY}" > ${IMAGE_ROOTFS}${sysconfdir}/dropbear/authorized_keys
+        chmod 0600 ${IMAGE_ROOTFS}${sysconfdir}/dropbear/authorized_keys
+    fi
 }
-ROOTFS_POSTPROCESS_COMMAND += "vantageos_set_root_password;"
+ROOTFS_POSTPROCESS_COMMAND += "vantageos_configure_dev_access;"
 
-# Install SSH authorized key for root dropbear access
-vantageos_install_ssh_key() {
-    install -d -m 0700 ${IMAGE_ROOTFS}${sysconfdir}/dropbear
-    install -m 0600 /dev/null ${IMAGE_ROOTFS}${sysconfdir}/dropbear/authorized_keys
-    cat <<'EOF' > ${IMAGE_ROOTFS}${sysconfdir}/dropbear/authorized_keys
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG90D8qYbIN08D5ctMiiKkln2w75FrD2MLvCQmWTpSqQ user@pc
+vantageos_configure_portal() {
+    if [ "${VANTAGEOS_ENABLE_CAPTIVE_PORTAL}" != "1" ]; then
+        return 0
+    fi
+
+    rm -f ${IMAGE_ROOTFS}${sysconfdir}/nginx/sites-enabled/default_server
+
+    install -d ${IMAGE_ROOTFS}${sysconfdir}/nginx/certs
+    openssl_conf=${WORKDIR}/vantageos-portal-openssl.cnf
+    cat > ${openssl_conf} <<EOF
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+
+[ req_distinguished_name ]
+CN = ${VANTAGEOS_PORTAL_HOSTNAME}
+
+[ v3_req ]
+subjectAltName = @alt_names
+basicConstraints = critical,CA:FALSE
+keyUsage = critical,digitalSignature,keyEncipherment
+extendedKeyUsage = serverAuth
+
+[ alt_names ]
+DNS.1 = ${VANTAGEOS_PORTAL_HOSTNAME}
+DNS.2 = localhost
+IP.1 = ${VANTAGEOS_PORTAL_IP}
+IP.2 = 127.0.0.1
 EOF
+
+    openssl req -x509 -nodes -newkey rsa:2048 -days 3650 \
+        -keyout ${IMAGE_ROOTFS}${sysconfdir}/nginx/certs/vantageos.key \
+        -out ${IMAGE_ROOTFS}${sysconfdir}/nginx/certs/vantageos.crt \
+        -config ${openssl_conf} -extensions v3_req >/dev/null 2>&1
+    chmod 0600 ${IMAGE_ROOTFS}${sysconfdir}/nginx/certs/vantageos.key
+    chmod 0644 ${IMAGE_ROOTFS}${sysconfdir}/nginx/certs/vantageos.crt
 }
-ROOTFS_POSTPROCESS_COMMAND += "vantageos_install_ssh_key;"
+
+ROOTFS_POSTPROCESS_COMMAND += "vantageos_configure_portal;"
 
 # Manually enable dropbear service (don't use ssh-server-dropbear to avoid openssh deps)
-SYSTEMD_AUTO_ENABLE:dropbear = "enable"
+SYSTEMD_AUTO_ENABLE:dropbear = "${@bb.utils.contains('VANTAGEOS_ENABLE_DEV_ACCESS', '1', 'enable', 'disable', d)}"
+SYSTEMD_AUTO_ENABLE:dnsmasq = "enable"
 SYSTEMD_AUTO_ENABLE:suricata = "enable"
-SYSTEMD_AUTO_ENABLE:hostapd = "enable"
+SYSTEMD_AUTO_ENABLE:hostapd = "disable"
 SYSTEMD_AUTO_ENABLE:wpa-supplicant = "disable"
+SYSTEMD_AUTO_ENABLE:nginx = "enable"
 INITSCRIPT_PACKAGES:append = " dropbear"
 INITSCRIPT_NAME:dropbear = "dropbear"
 INITSCRIPT_PARAMS:dropbear = "defaults 10"

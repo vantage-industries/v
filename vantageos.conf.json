@@ -94,6 +94,7 @@
           "meta-openembedded/meta-oe",
           "meta-openembedded/meta-python",
           "meta-openembedded/meta-networking",
+          "meta-openembedded/meta-webserver",
           "meta-security",
           "meta-raspberrypi",
           "meta-vantageos"

@@ -1,0 +1,15 @@
+# Go build output
+bin/
+/vantageos-api
+*.test
+*.out
+.coverprofile
+
+# Frontend build output
+frontend/dist/
+frontend/.vite/
+frontend/node_modules/
+
+# Legacy Python artifacts
+*.db
+*.sqlite

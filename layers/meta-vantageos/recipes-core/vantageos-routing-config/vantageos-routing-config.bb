@@ -7,11 +7,14 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r3"
+PR = "r6"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
     file://25-wlan0.network \
+    file://dnsmasq.conf \
+    file://dnsmasq.service.d/10-vantageos.conf \
+    file://90-vantageos-router.conf \
     file://hostapd.conf \
     file://vantageos-hostapd.service \
     file://vantageos-router.service \
@@ -23,6 +26,14 @@ do_install() {
     install -d ${D}${sysconfdir}/systemd/network
     install -m 0644 ${UNPACKDIR}/10-vantageos-routing.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/25-wlan0.network ${D}${sysconfdir}/systemd/network/
+
+    # Install persistent forwarding sysctl config
+    install -d ${D}${sysconfdir}/sysctl.d
+    install -m 0644 ${UNPACKDIR}/90-vantageos-router.conf ${D}${sysconfdir}/sysctl.d/
+
+    # Install captive portal DNS config
+    install -d ${D}${sysconfdir}/dnsmasq.d
+    install -m 0644 ${UNPACKDIR}/dnsmasq.conf ${D}${sysconfdir}/dnsmasq.d/vantageos.conf
     
     # Install hostapd config
     install -d ${D}${sysconfdir}/hostapd
@@ -34,6 +45,8 @@ do_install() {
     
     # Install systemd services
     install -d ${D}${systemd_system_unitdir}
+    install -d ${D}${systemd_system_unitdir}/dnsmasq.service.d
+    install -m 0644 ${UNPACKDIR}/dnsmasq.service.d/10-vantageos.conf ${D}${systemd_system_unitdir}/dnsmasq.service.d/10-vantageos.conf
     install -m 0644 ${UNPACKDIR}/vantageos-hostapd.service ${D}${systemd_system_unitdir}/
     install -m 0644 ${UNPACKDIR}/vantageos-router.service ${D}${systemd_system_unitdir}/
     
@@ -42,15 +55,6 @@ do_install() {
 }
 
 pkg_postinst_ontarget:${PN}() {
-    # Enable IP forwarding on first boot
-    if ! grep -q "net.ipv4.ip_forward=1" /etc/sysctl.conf; then
-        echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
-    fi
-    if ! grep -q "net.ipv6.conf.all.forwarding=1" /etc/sysctl.conf; then
-        echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.conf
-    fi
-    sysctl -p || true
-    
     systemctl enable vantageos-hostapd.service || true
     systemctl enable vantageos-router.service || true
 }
@@ -58,9 +62,12 @@ pkg_postinst_ontarget:${PN}() {
 FILES:${PN} = " \
     ${sysconfdir}/systemd/network/10-vantageos-routing.network \
     ${sysconfdir}/systemd/network/25-wlan0.network \
+    ${sysconfdir}/dnsmasq.d/vantageos.conf \
+    ${sysconfdir}/sysctl.d/90-vantageos-router.conf \
     ${sysconfdir}/hostapd/vantageos-hostapd.conf \
     ${sysconfdir}/vantageos-routing-installed \
     ${bindir}/vantageos-routing-setup \
+    ${systemd_system_unitdir}/dnsmasq.service.d/10-vantageos.conf \
     ${systemd_system_unitdir}/vantageos-hostapd.service \
     ${systemd_system_unitdir}/vantageos-router.service \
 "
@@ -68,6 +75,7 @@ FILES:${PN} = " \
 RDEPENDS:${PN} = " \
     iproute2 \
     hostapd \
+    dnsmasq \
     iptables \
 "
 

@@ -23,6 +23,15 @@ cd vantageos
 ./yocto-docker.sh runqemu
 ```
 
+## Dev Shell
+
+```bash
+nix develop
+```
+
+This root shell provides the flashing helper dependency `bmaptool`.
+Use `scripts/flash-image.sh /dev/sdX` from that shell.
+
 ## Available Machines
 
 - `qemuarm64` - QEMU ARM64 emulator (default)

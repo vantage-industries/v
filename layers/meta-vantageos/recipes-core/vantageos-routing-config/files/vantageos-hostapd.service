@@ -2,6 +2,7 @@
 Description=VantageOS Hostapd AP
 After=systemd-networkd.service
 Wants=systemd-networkd.service
+Before=vantageos-router.service
 
 [Service]
 Type=simple
