@@ -1,0 +1,17 @@
+# Override these values if the hardware uses different interface names or AP settings.
+LAN_IFACE=wlan0
+WAN_IFACE=
+
+LAN_ADDR=192.168.50.1
+LAN_PREFIX=24
+LAN_SUBNET=192.168.50.0/24
+DHCP_START=192.168.50.100
+DHCP_END=192.168.50.200
+DHCP_NETMASK=255.255.255.0
+
+WIFI_SSID=VantageOS
+WIFI_PASSPHRASE=vantageos-router
+WIFI_CHANNEL=6
+
+DNS_UPSTREAM_1=1.1.1.1
+DNS_UPSTREAM_2=8.8.8.8

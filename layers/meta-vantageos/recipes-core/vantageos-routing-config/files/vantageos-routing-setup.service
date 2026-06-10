@@ -1,0 +1,14 @@
+[Unit]
+Description=Configure VantageOS AP routing and NAT
+After=systemd-networkd.service network-online.target
+Wants=systemd-networkd.service network-online.target
+Before=vantageos-hostapd.service vantageos-dnsmasq.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/vantageos-router
+ExecStart=/usr/bin/vantageos-routing-setup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

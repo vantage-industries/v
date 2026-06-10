@@ -1,0 +1,12 @@
+[Unit]
+Description=VantageOS DHCP and DNS for Wi-Fi clients
+Requires=vantageos-routing-setup.service
+After=vantageos-routing-setup.service
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/dnsmasq --keep-in-foreground --conf-file=/run/vantageos/dnsmasq.conf
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=VantageOS Wi-Fi access point
+Requires=vantageos-routing-setup.service
+After=vantageos-routing-setup.service
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/hostapd /run/vantageos/hostapd.conf
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

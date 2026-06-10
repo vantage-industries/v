@@ -16,8 +16,12 @@ IMAGE_INSTALL = " \
     packagegroup-core-boot \
     vantageos-routing-config \
     vantageos-suricata-config \
+    dnsmasq \
     dropbear \
+    hostapd \
+    iw \
     iptables \
+    systemd-networkd \
     suricata \
 "
 # packagegroup-base-extended
@@ -31,6 +35,9 @@ IMAGE_FEATURES:append = "empty-root-password allow-root-login serial-autologin-r
 # Manually enable dropbear service (don't use ssh-server-dropbear to avoid openssh deps)
 SYSTEMD_AUTO_ENABLE:dropbear = "enable"
 SYSTEMD_AUTO_ENABLE:suricata = "enable"
+SYSTEMD_AUTO_ENABLE:dnsmasq = "disable"
+SYSTEMD_AUTO_ENABLE:hostapd = "disable"
+SYSTEMD_AUTO_ENABLE:systemd-networkd = "enable"
 INITSCRIPT_PACKAGES:append = " dropbear"
 INITSCRIPT_NAME:dropbear = "dropbear"
 INITSCRIPT_PARAMS:dropbear = "defaults 10"

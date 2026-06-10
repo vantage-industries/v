@@ -1,0 +1,11 @@
+[Match]
+Name=eth* en* usb*
+
+[Network]
+DHCP=ipv4
+IPForward=yes
+
+[DHCPv4]
+UseDNS=yes
+UseRoutes=yes
+RouteMetric=100

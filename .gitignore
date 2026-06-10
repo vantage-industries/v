@@ -50,3 +50,6 @@ bitbake-cookerdaemon.log
 # Build output directory
 bitbake-builds/**
 !bitbake-builds/
+
+# Scripts
+scripts/
