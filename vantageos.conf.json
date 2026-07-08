@@ -50,7 +50,7 @@
       "git-remote":{
         "remotes":{
           "origin": {
-            "uri": "git://git.yoctoproject.org/meta-security"
+            "uri": "https://git.yoctoproject.org/meta-security"
           }
 
         },
