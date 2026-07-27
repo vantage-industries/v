@@ -19,7 +19,7 @@ case "${1:-}" in
   init)
     echo "Initializing VantageOS build environment..."
     docker compose run --rm yocto-builder bash -c \
-      "./bitbake/bin/bitbake-setup init --non-interactive -L meta-vantageos /home/builder/layers/meta-vantageos /home/builder/vantageos.conf.json vantageos machine/raspberrypi5 --setup-dir-name vantageos"
+      "./bitbake/bin/bitbake-setup init --non-interactive -L meta-vantageos /home/builder/layers/meta-vantageos /home/builder/vantageos.conf.json vantageos machine/qemuarm64 --setup-dir-name vantageos"
     echo ""
     echo "VantageOS build environment initialized!"
     echo "To build: ./yocto-docker.sh bitbake vantageos-image"
@@ -34,8 +34,16 @@ case "${1:-}" in
     echo "Running bitbake command: bitbake $*"
      docker compose run --rm yocto-builder bash -c "
        source ~/bitbake-builds/vantageos/build/init-build-env
-       bitbake "$@"
+       bitbake $*
      "
+    ;;
+
+  setup)
+    shift
+    echo "Running bitbake-setup command: bitbake-setup $* --setup-dir ~/bitbake-builds/vantageos"
+    docker compose run --rm yocto-builder bash -c "
+      ./bitbake/bin/bitbake-setup $* --setup-dir ~/bitbake-builds/vantageos
+    "
     ;;
 
    runqemu)
@@ -52,18 +60,21 @@ case "${1:-}" in
   *)
     echo "Yocto Docker Build Helper"
     echo ""
-    echo "Usage: $0 {build|shell|init|bitbake|runqemu|clean}"
+    echo "Usage: $0 {build|shell|init|bitbake|setup|runqemu|clean}"
     echo ""
     echo "Commands:"
     echo "  build             Build the Docker image"
     echo "  shell             Start an interactive shell in the container"
     echo "  bitbake <target>  Run bitbake command"
+    echo "  setup <args>      Run bitbake-setup command (e.g. status, update)"
     echo "  runqemu           Run QEMU emulator"
     echo ""
     echo "Examples:"
     echo "  $0 build"
     echo "  $0 shell"
     echo "  $0 bitbake core-image-sato"
+    echo "  $0 setup status"
+    echo "  $0 setup update"
     exit 1
     ;;
 esac

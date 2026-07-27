@@ -64,3 +64,9 @@ control-plane/backend/*.db
 control-plane/backend/*.sqlite
 control-plane/result
 tailscale-keys
+
+# claude
+.claude
+
+.bash_history
+.wget-hsts

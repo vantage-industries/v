@@ -24,9 +24,12 @@ services:
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     stdin_open: true
     tty: true
+    # my thinkpad died here so i changed limits 32gb and 16gb reservation
+    mem_limit: 6G
+    mem_reservation: 4G
     deploy:
       resources:
         limits:
-          memory: 32G
+          memory: 6G
         reservations:
-          memory: 16G
+          memory: 4G

@@ -3,7 +3,7 @@ DESCRIPTION = "Static SPA frontend plus local Go API for VantageOS"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=d462c0efd0687ee7aa138bac25146313"
 
-inherit externalsrc systemd
+inherit externalsrc systemd goarch
 
 CONTROL_PLANE_SRC = "${@os.path.abspath(os.path.join(d.getVar('TOPDIR'), '../../../control-plane'))}"
 EXTERNALSRC = "${CONTROL_PLANE_SRC}"
@@ -35,6 +35,11 @@ do_compile() {
     pnpm exec vite build --outDir ${B}/frontend-dist
 
     cd ${S}/backend
+    export GOOS="${TARGET_GOOS}"
+    export GOARCH="${TARGET_GOARCH}"
+    export CGO_ENABLED="1"
+    export CGO_CFLAGS="${CFLAGS}"
+    export CGO_LDFLAGS="${LDFLAGS}"
     go build -trimpath -o ${B}/vantageos-api ./cmd/vantageos-api
     go build -trimpath -o ${B}/vantageos-resetd ./cmd/vantageos-resetd
 }
