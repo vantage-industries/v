@@ -5,7 +5,7 @@ set -e
 
 echo "Configuring VantageOS router..."
 
-WAN_IFACE="${VANTAGEOS_WAN_IFACE:-end0}"
+WAN_IFACE="${VANTAGEOS_WAN_IFACE:-eth0}"
 AP_IFACE="${VANTAGEOS_AP_IFACE:-wlan0}"
 
 # Enable IP forwarding
