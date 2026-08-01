@@ -53,9 +53,9 @@ vantageos_configure_dev_access() {
     fi
 
     if [ -n "${VANTAGEOS_SSH_PUBLIC_KEY}" ]; then
-        install -d -m 0700 ${IMAGE_ROOTFS}${sysconfdir}/dropbear
-        printf '%s\n' "${VANTAGEOS_SSH_PUBLIC_KEY}" > ${IMAGE_ROOTFS}${sysconfdir}/dropbear/authorized_keys
-        chmod 0600 ${IMAGE_ROOTFS}${sysconfdir}/dropbear/authorized_keys
+        install -d -m 0700 ${IMAGE_ROOTFS}/root/.ssh
+        printf '%s\n' "${VANTAGEOS_SSH_PUBLIC_KEY}" > ${IMAGE_ROOTFS}/root/.ssh/authorized_keys
+        chmod 0600 ${IMAGE_ROOTFS}/root/.ssh/authorized_keys
     fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "vantageos_configure_dev_access;"
