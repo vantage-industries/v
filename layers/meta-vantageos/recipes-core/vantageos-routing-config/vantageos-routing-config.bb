@@ -91,6 +91,7 @@ FILES:${PN} = " \
     ${sysconfdir}/dnsmasq.d/vantageos.conf \
     ${sysconfdir}/sysctl.d/90-vantageos-router.conf \
     ${sysconfdir}/hostapd/vantageos-hostapd.conf \
+    ${sysconfdir}/hostapd/wpa_psk \
     ${sysconfdir}/vantageos-routing-installed \
     ${bindir}/vantageos-routing-setup \
     ${systemd_system_unitdir}/dnsmasq.service.d/10-vantageos.conf \
