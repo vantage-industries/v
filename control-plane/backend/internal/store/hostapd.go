@@ -14,12 +14,12 @@ const (
 	HostapdConfigPath = "/etc/hostapd/vantageos-hostapd.conf"
 	WpaPskFilePath    = "/var/lib/vantageos/wpa_psk_file"
 	NetworkdDir       = "/etc/systemd/network"
-	Wlan0NetworkdPath = NetworkdDir + "/25-wlan0.network"
+	Wlan0NetworkdPath = NetworkdDir + "/25-wlan1.network"
 	DnsmasqConfigPath = "/etc/dnsmasq.d/vantageos.conf"
 )
 
 func SetupSSIDSuffix() string {
-	data, err := os.ReadFile("/sys/class/net/wlan0/address")
+	data, err := os.ReadFile("/sys/class/net/wlan1/address")
 	if err != nil {
 		return "0000"
 	}
@@ -46,7 +46,7 @@ func channelFromNetworks(networks []Network) string {
 func GenerateSingleSSIDConfig(ssid string, networks []Network) string {
 	ch := channelFromNetworks(networks)
 
-	return fmt.Sprintf(`interface=wlan0
+	return fmt.Sprintf(`interface=wlan1
 driver=nl80211
 ssid=%s
 hw_mode=a
@@ -97,7 +97,7 @@ func GenerateWpaPskFile(psk string, credentials []Credential) string {
 
 func GenerateWlan0NetworkConfigSubnet(cidr string) string {
 	return fmt.Sprintf(`[Match]
-Name=wlan0
+Name=wlan1
 
 [Network]
 Address=%s
@@ -114,7 +114,7 @@ DNS=%s
 }
 
 func GenerateDnsmasqConfigOperational() string {
-	return fmt.Sprintf(`interface=wlan0
+	return fmt.Sprintf(`interface=wlan1
 bind-interfaces
 listen-address=%s
 local-service

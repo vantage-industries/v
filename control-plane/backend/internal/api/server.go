@@ -104,7 +104,7 @@ func (s *Server) getDnsmasqPath() string {
 
 const (
 	suricataEveLog    = "/var/log/suricata/eve.json"
-	trafficStatPath   = "/sys/class/net/wlan0/statistics"
+	trafficStatPath   = "/sys/class/net/wlan1/statistics"
 	pollInterval      = 60 * time.Second
 )
 
@@ -560,11 +560,11 @@ func (s *Server) RegenerateRuntimeConfigs() error {
 	}
 
 	wlan0Config := store.GenerateWlan0NetworkConfigSubnet(store.MainSubnetCIDR)
-	if err := writeConfigFile(s.getNetworkdDir()+"/25-wlan0.network", wlan0Config); err != nil {
+	if err := writeConfigFile(s.getNetworkdDir()+"/25-wlan1.network", wlan0Config); err != nil {
 		return fmt.Errorf("wlan0 network config: %w", err)
 	}
 
-	_ = os.Remove(s.getNetworkdDir() + "/25-wlan0-1.network")
+	_ = os.Remove(s.getNetworkdDir() + "/25-wlan1-1.network")
 
 	dnsmasqConfig := store.GenerateDnsmasqConfigOperational()
 	if err := writeConfigFile(s.getDnsmasqPath(), dnsmasqConfig); err != nil {
@@ -609,12 +609,12 @@ func (s *Server) applyConfig(w http.ResponseWriter, r *http.Request) {
 
 	// Write operational subnet network config
 	wlan0Config := store.GenerateWlan0NetworkConfigSubnet(store.MainSubnetCIDR)
-	if err := writeConfigFile(s.getNetworkdDir()+"/25-wlan0.network", wlan0Config); err != nil {
+	if err := writeConfigFile(s.getNetworkdDir()+"/25-wlan1.network", wlan0Config); err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to write network config: "+err.Error())
 		return
 	}
 
-	_ = os.Remove(s.getNetworkdDir() + "/25-wlan0-1.network")
+	_ = os.Remove(s.getNetworkdDir() + "/25-wlan1-1.network")
 
 	dnsmasqConfig := store.GenerateDnsmasqConfigOperational()
 	if err := writeConfigFile(s.getDnsmasqPath(), dnsmasqConfig); err != nil {

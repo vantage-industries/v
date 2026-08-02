@@ -8,7 +8,7 @@ Before=vantageos-router.service
 Type=simple
 Restart=on-failure
 RestartSec=5
-ExecStartPre=/bin/sh -c 'until ip link show wlan0 2>/dev/null; do sleep 2; done'
+ExecStartPre=/bin/sh -c 'until ip link show wlan1 2>/dev/null; do sleep 2; done'
 ExecStart=/usr/sbin/hostapd /etc/hostapd/vantageos-hostapd.conf
 
 [Install]

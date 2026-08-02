@@ -33,7 +33,8 @@ IMAGE_INSTALL = " \
     udev-rules-rpi \
     linux-firmware-rpidistro-bcm43455 \
     linux-firmware-rpidistro-bcm43456 \
-    rtl8852bu \
+    linux-firmware-rtl8852 \
+    rtw89-usb \
     iw \
 "
 # packagegroup-base-extended

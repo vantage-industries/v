@@ -7,15 +7,24 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r7"
+PR = "r12"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
-    file://25-wlan0.network \
+    file://10-alfa-wlan.link \
+    file://25-wlan1.network \
+    file://30-vlan5-quarantine.network \
+    file://31-vlan10-trusted.network \
+    file://32-vlan20-guest.network \
+    file://33-vlan30-cloud.network \
+    file://34-vlan40-cam.network \
+    file://35-vlan50-iot.network \
+    file://36-vlan60-services.network \
     file://dnsmasq.conf \
     file://dnsmasq.service.d/10-vantageos.conf \
     file://90-vantageos-router.conf \
     file://hostapd.conf \
+    file://wpa_psk \
     file://vantageos-hostapd.service \
     file://vantageos-router.service \
     file://routing-setup.sh \
@@ -25,7 +34,15 @@ do_install() {
     # Install systemd-networkd routing configs
     install -d ${D}${sysconfdir}/systemd/network
     install -m 0644 ${UNPACKDIR}/10-vantageos-routing.network ${D}${sysconfdir}/systemd/network/
-    install -m 0644 ${UNPACKDIR}/25-wlan0.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/10-alfa-wlan.link ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/25-wlan1.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/30-vlan5-quarantine.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/31-vlan10-trusted.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/32-vlan20-guest.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/33-vlan30-cloud.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/34-vlan40-cam.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/35-vlan50-iot.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/36-vlan60-services.network ${D}${sysconfdir}/systemd/network/
 
     # Install persistent forwarding sysctl config
     install -d ${D}${sysconfdir}/sysctl.d
@@ -38,7 +55,8 @@ do_install() {
     # Install hostapd config
     install -d ${D}${sysconfdir}/hostapd
     install -m 0644 ${UNPACKDIR}/hostapd.conf ${D}${sysconfdir}/hostapd/vantageos-hostapd.conf
-    
+    install -m 0600 ${UNPACKDIR}/wpa_psk ${D}${sysconfdir}/hostapd/wpa_psk
+
     # Install routing setup script
     install -d ${D}${bindir}
     install -m 0755 ${UNPACKDIR}/routing-setup.sh ${D}${bindir}/vantageos-routing-setup
@@ -61,7 +79,15 @@ pkg_postinst_ontarget:${PN}() {
 
 FILES:${PN} = " \
     ${sysconfdir}/systemd/network/10-vantageos-routing.network \
-    ${sysconfdir}/systemd/network/25-wlan0.network \
+    ${sysconfdir}/systemd/network/10-alfa-wlan.link \
+    ${sysconfdir}/systemd/network/25-wlan1.network \
+    ${sysconfdir}/systemd/network/30-vlan5-quarantine.network \
+    ${sysconfdir}/systemd/network/31-vlan10-trusted.network \
+    ${sysconfdir}/systemd/network/32-vlan20-guest.network \
+    ${sysconfdir}/systemd/network/33-vlan30-cloud.network \
+    ${sysconfdir}/systemd/network/34-vlan40-cam.network \
+    ${sysconfdir}/systemd/network/35-vlan50-iot.network \
+    ${sysconfdir}/systemd/network/36-vlan60-services.network \
     ${sysconfdir}/dnsmasq.d/vantageos.conf \
     ${sysconfdir}/sysctl.d/90-vantageos-router.conf \
     ${sysconfdir}/hostapd/vantageos-hostapd.conf \

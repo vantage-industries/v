@@ -6,7 +6,11 @@ set -e
 echo "Configuring VantageOS router..."
 
 WAN_IFACE="${VANTAGEOS_WAN_IFACE:-eth0}"
-AP_IFACE="${VANTAGEOS_AP_IFACE:-wlan0}"
+AP_IFACE="${VANTAGEOS_AP_IFACE:-wlan1}"
+# hostapd dynamic_vlan + vlan_bridge=br-vlan puts client traffic on a
+# per-VLAN bridge (br-vlan5, br-vlan10, ...), not on wlan1 itself, so the
+# FORWARD rules must match the bridge wildcard, not the physical AP iface.
+VLAN_BRIDGES="br-vlan+"
 
 # Enable IP forwarding
 sysctl -w net.ipv4.ip_forward=1
@@ -24,5 +28,11 @@ iptables -w -C FORWARD -i "${WAN_IFACE}" -o "${AP_IFACE}" -m state --state RELAT
 
 iptables -w -C FORWARD -i "${AP_IFACE}" -o "${WAN_IFACE}" -j ACCEPT 2>/dev/null || \
     iptables -w -A FORWARD -i "${AP_IFACE}" -o "${WAN_IFACE}" -j ACCEPT
+
+iptables -w -C FORWARD -i "${WAN_IFACE}" -o "${VLAN_BRIDGES}" -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || \
+    iptables -w -A FORWARD -i "${WAN_IFACE}" -o "${VLAN_BRIDGES}" -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+iptables -w -C FORWARD -i "${VLAN_BRIDGES}" -o "${WAN_IFACE}" -j ACCEPT 2>/dev/null || \
+    iptables -w -A FORWARD -i "${VLAN_BRIDGES}" -o "${WAN_IFACE}" -j ACCEPT
 
 echo "Router configuration complete!"

@@ -1,0 +1,9 @@
+# Pin the Alfa AWUS036AX to a stable name (wlan1) regardless of USB
+# enumeration order. Confirmed on-device:
+# /sys/class/net/wlan1/device/driver -> rtw89_8852bu_git (the bound
+# per-chip usb driver name, not the generic "rtw89_usb" core name).
+[Match]
+Driver=rtw89_8852bu_git
+
+[Link]
+Name=wlan1
