@@ -12,6 +12,10 @@ DEPENDS:append = " openssl-native "
 VANTAGEOS_ENABLE_DEV_ACCESS ?= "0"
 VANTAGEOS_ROOT_PASSWORD ?= ""
 VANTAGEOS_SSH_PUBLIC_KEY ?= ""
+# Tailscale is opt-in and ships with no auth key baked in -- joining the
+# tailnet is a runtime action (interactive `tailscale up` or a key supplied
+# out-of-band), never a build-time secret.
+VANTAGEOS_ENABLE_TAILSCALE ?= "0"
 VANTAGEOS_ENABLE_CAPTIVE_PORTAL ?= "1"
 VANTAGEOS_PORTAL_HOSTNAME ?= "vantageos.local"
 VANTAGEOS_PORTAL_IP ?= "192.168.88.1"
@@ -43,6 +47,7 @@ DISTRO = "vantageos"
 export IMAGE_BASENAME = "vantageos-image"
 
 IMAGE_FEATURES:append = "${@bb.utils.contains('VANTAGEOS_ENABLE_DEV_ACCESS', '1', ' allow-root-login serial-autologin-root', '', d)}"
+IMAGE_INSTALL:append = "${@bb.utils.contains('VANTAGEOS_ENABLE_TAILSCALE', '1', ' tailscale tailscaled', '', d)}"
 
 vantageos_configure_dev_access() {
     if [ "${VANTAGEOS_ENABLE_DEV_ACCESS}" != "1" ]; then
@@ -112,6 +117,7 @@ SYSTEMD_AUTO_ENABLE:suricata = "enable"
 SYSTEMD_AUTO_ENABLE:hostapd = "disable"
 SYSTEMD_AUTO_ENABLE:wpa-supplicant = "disable"
 SYSTEMD_AUTO_ENABLE:nginx = "enable"
+SYSTEMD_AUTO_ENABLE:tailscaled = "${@bb.utils.contains('VANTAGEOS_ENABLE_TAILSCALE', '1', 'enable', 'disable', d)}"
 INITSCRIPT_PACKAGES:append = " dropbear"
 INITSCRIPT_NAME:dropbear = "dropbear"
 INITSCRIPT_PARAMS:dropbear = "defaults 10"
