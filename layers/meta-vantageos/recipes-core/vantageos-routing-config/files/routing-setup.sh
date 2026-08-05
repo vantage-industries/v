@@ -16,7 +16,12 @@ GUEST_BW_MBIT="${VANTAGEOS_GUEST_BW_MBIT:-20}"
 
 BR5=br-vlan5    # Quarantine / onboarding
 BR10=br-vlan10  # Trusted
-BR20=br-vlan20  # Guest
+# Guest lives on its own physical radio (wlan0), routed not bridged --
+# brcmfmac (onboard Pi 5 radio) rejects bridge enslavement outright, so
+# unlike every other VLAN below this one is a plain interface, matched by
+# name in iptables exactly like eth0/tailscale0 are. Everything else about
+# VLAN20 (rules, dnsmasq scope, bandwidth cap) is otherwise unchanged.
+BR20=wlan0      # Guest
 BR30=br-vlan30  # Cloud Native
 BR40=br-vlan40  # CAM
 BR50=br-vlan50  # IoT offline / hybrid

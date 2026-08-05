@@ -17,7 +17,9 @@ RDEPENDS:${PN} = " \
 "
 
 SYSTEMD_SERVICE:${PN} = "vantageos-api.service vantageos-resetd.service vantageos-certgen.service"
-SYSTEMD_AUTO_ENABLE:${PN} = "enable"
+# Disabled for now: package still builds and ships (UI, binaries, units,
+# nginx config all present) but nothing auto-starts at boot.
+SYSTEMD_AUTO_ENABLE:${PN} = "disable"
 
 do_compile() {
     export HOME=${WORKDIR}

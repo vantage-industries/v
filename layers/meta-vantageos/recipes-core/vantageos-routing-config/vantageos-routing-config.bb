@@ -7,17 +7,15 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r14"
+PR = "r15"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
     file://10-alfa-wlan.link \
     file://25-wlan1.network \
     file://26-wlan0.network \
-    file://29-br-vlan20.netdev \
     file://30-vlan5-quarantine.network \
     file://31-vlan10-trusted.network \
-    file://32-vlan20-guest.network \
     file://33-vlan30-cloud.network \
     file://34-vlan40-cam.network \
     file://35-vlan50-iot.network \
@@ -40,10 +38,8 @@ do_install() {
     install -m 0644 ${UNPACKDIR}/10-alfa-wlan.link ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/25-wlan1.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/26-wlan0.network ${D}${sysconfdir}/systemd/network/
-    install -m 0644 ${UNPACKDIR}/29-br-vlan20.netdev ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/30-vlan5-quarantine.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/31-vlan10-trusted.network ${D}${sysconfdir}/systemd/network/
-    install -m 0644 ${UNPACKDIR}/32-vlan20-guest.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/33-vlan30-cloud.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/34-vlan40-cam.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/35-vlan50-iot.network ${D}${sysconfdir}/systemd/network/
@@ -89,10 +85,8 @@ FILES:${PN} = " \
     ${sysconfdir}/systemd/network/10-alfa-wlan.link \
     ${sysconfdir}/systemd/network/25-wlan1.network \
     ${sysconfdir}/systemd/network/26-wlan0.network \
-    ${sysconfdir}/systemd/network/29-br-vlan20.netdev \
     ${sysconfdir}/systemd/network/30-vlan5-quarantine.network \
     ${sysconfdir}/systemd/network/31-vlan10-trusted.network \
-    ${sysconfdir}/systemd/network/32-vlan20-guest.network \
     ${sysconfdir}/systemd/network/33-vlan30-cloud.network \
     ${sysconfdir}/systemd/network/34-vlan40-cam.network \
     ${sysconfdir}/systemd/network/35-vlan50-iot.network \

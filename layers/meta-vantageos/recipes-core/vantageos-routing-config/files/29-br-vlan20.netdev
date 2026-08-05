@@ -1,7 +1,0 @@
-# Explicit Guest bridge. Previously br-vlan20 was auto-created by hostapd's
-# dynamic_vlan on wlan1; now that Guest lives on its own radio (wlan0,
-# untagged) instead of a wpa_psk-keyed VLAN, nothing creates this bridge
-# automatically, so it needs its own netdev.
-[NetDev]
-Name=br-vlan20
-Kind=bridge

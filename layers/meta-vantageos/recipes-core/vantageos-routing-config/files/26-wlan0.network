@@ -2,6 +2,11 @@
 Name=wlan0
 
 [Network]
-Bridge=br-vlan20
+# Routed, not bridged: brcmfmac (onboard Pi 5 radio) rejects bridge
+# enslavement outright (`ip link set wlan0 master ...` -> EOPNOTSUPP,
+# confirmed on-device). Guest is a plain routed subnet off wlan0 instead,
+# same model as eth0/tailscale0 in routing-setup.sh (matched by interface
+# name in iptables, no bridge involved).
+Address=192.168.20.1/24
 LinkLocalAddressing=no
 RequiredForOnline=no
