@@ -8,8 +8,11 @@ Before=vantageos-router.service
 Type=simple
 Restart=on-failure
 RestartSec=5
-ExecStartPre=/bin/sh -c 'until ip link show wlan1 2>/dev/null; do sleep 2; done'
-ExecStart=/usr/sbin/hostapd /etc/hostapd/vantageos-hostapd.conf
+ExecStartPre=/bin/sh -c 'until ip link show wlan1 2>/dev/null && ip link show wlan0 2>/dev/null; do sleep 2; done'
+# Single hostapd process, two config files -> two independent radios
+# (wlan1 Trusted/etc via dynamic VLAN, wlan0 Guest untagged). hostapd
+# supports this natively; no need for two services.
+ExecStart=/usr/sbin/hostapd /etc/hostapd/vantageos-hostapd.conf /etc/hostapd/vantageos-hostapd-guest.conf
 
 [Install]
 WantedBy=multi-user.target

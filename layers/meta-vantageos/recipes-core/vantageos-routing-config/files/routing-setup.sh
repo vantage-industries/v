@@ -1,24 +1,17 @@
 #!/bin/sh
 # VantageOS Routing Setup Script
 #
-# Implements the SecurityHub segmentation model (Projekt sieci PDF, Etap 1):
-# the "z -> do" matrix (PDF SS4), the per-segment rules (PDF SS5), the
-# management-plane lockdown (PDF SS6) and the internet-window primitive
-# (PDF SS7). Traffic never traverses the physical wlan1 AP interface itself
-# once dynamic_vlan assigns a station to a VLAN -- hostapd moves it onto
-# wlan1.<vlanid>, a member of the matching br-vlan<N> bridge -- so every
-# FORWARD/INPUT rule below matches on the bridge, never on wlan1.
 
 set -e
 
 echo "Configuring VantageOS router..."
 
 WAN_IFACE="${VANTAGEOS_WAN_IFACE:-eth0}"
-# Admin host inside Trusted allowed to reach the panel/SSH (PDF SS6, control
-# 8: "Allow-lista hosta admina"). Empty = any host on br-vlan10 may reach
+# Admin host inside Trusted allowed to reach the panel/SSH . 
+# Empty = any host on br-vlan10 may reach
 # them (still gated by VLAN membership, just not by a specific host).
 ADMIN_IP="${VANTAGEOS_ADMIN_IP:-}"
-# Aggregate download cap for the Guest segment (PDF SS5.3 / Appendix A.5).
+# Aggregate download cap for the Guest segment.
 GUEST_BW_MBIT="${VANTAGEOS_GUEST_BW_MBIT:-20}"
 
 BR5=br-vlan5    # Quarantine / onboarding
@@ -30,7 +23,7 @@ BR50=br-vlan50  # IoT offline / hybrid
 BR60=br-vlan60  # Services (HA, NVR)
 
 # Home Assistant / NVR controller -- the one host in Services that the
-# document grants active (not just replied-to) cross-VLAN reach (PDF SS5.7).
+# document grants active (not just replied-to) cross-VLAN reach.
 HA_IP=192.168.60.10
 
 # ipt <chain> <args...> -- append to <chain> iff an identical rule isn't
@@ -151,11 +144,11 @@ done
 ipt FORWARD -i "$BR60" -s "$HA_IP" -o "$WAN_IFACE" -p tcp --dport 443 -j ACCEPT
 ipt FORWARD -i "$BR60" -o "$WAN_IFACE" -j DROP
 
-echo "-- Management plane (PDF SS6) --"
+echo "-- Management plane --"
 # The hub is the firewall for every VLAN, so its own control surface gets
 # the three controls from SS6: bind-by-VLAN (source-bridge gate below),
 # admin-host allow-list (if VANTAGEOS_ADMIN_IP is set), and a hard INPUT
-# chain where every other VLAN reaches only DNS/DHCP/NTP (SS6 control 7).
+# chain where every other VLAN reaches only DNS/DHCP/NTP.
 ipt INPUT -i lo -j ACCEPT
 ipt INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 for br in "$BR5" "$BR10" "$BR20" "$BR30" "$BR40" "$BR50" "$BR60"; do
@@ -167,16 +160,20 @@ if [ -n "$ADMIN_IP" ]; then
 else
     ipt INPUT -i "$BR10" -p tcp -m multiport --dports 22,443 -j ACCEPT
 fi
-# Tailscale admin (SSH/panel) -- new inbound connections over the tailnet
-# don't match anything above (ESTABLISHED,RELATED only covers replies), so
-# without this rule they'd hit the default INPUT DROP even though
-# tailscaled itself reports the node as connected. Harmless no-op if the
-# tailscale0 interface never exists (feature not enabled on this image).
-ipt INPUT -i tailscale0 -p tcp -m multiport --dports 22,443 -j ACCEPT
-# No explicit WAN DROP needed -- default INPUT policy is DROP and nothing
-# above matches the WAN interface.
+# Tailscale admin -- full trust, any port. New inbound connections over the
+# tailnet don't match the ESTABLISHED,RELATED rule above (that only covers
+# replies), so without this they'd hit the default INPUT DROP even though
+# tailscaled itself reports the node as connected.
+ipt INPUT -i tailscale0 -j ACCEPT
+# eth0/WAN_IFACE admin trust -- test-rig only: in this setup eth0 isn't
+# real WAN, so the router itself trusts anything arriving on it directly.
+# INPUT-only: this does NOT add a FORWARD accept, so a brand-new connection
+# arriving on eth0 still can't reach into any VLAN -- FORWARD still only
+# ever accepts ESTABLISHED,RELATED for traffic that didn't originate on a
+# VLAN bridge (see line ~55). Revisit this rule before eth0 is ever real WAN.
+ipt INPUT -i "${WAN_IFACE}" -j ACCEPT
 
-echo "-- Guest bandwidth cap (PDF Appendix A.5) --"
+echo "-- Guest bandwidth cap --"
 # Idempotent: drop then recreate rather than tracking "does it already
 # exist" -- safe on a oneshot boot service or a manual re-run alike.
 tc qdisc del dev "$BR20" root >/dev/null 2>&1 || true

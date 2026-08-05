@@ -7,12 +7,14 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r13"
+PR = "r14"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
     file://10-alfa-wlan.link \
     file://25-wlan1.network \
+    file://26-wlan0.network \
+    file://29-br-vlan20.netdev \
     file://30-vlan5-quarantine.network \
     file://31-vlan10-trusted.network \
     file://32-vlan20-guest.network \
@@ -24,6 +26,7 @@ SRC_URI = " \
     file://dnsmasq.service.d/10-vantageos.conf \
     file://90-vantageos-router.conf \
     file://hostapd.conf \
+    file://hostapd-guest.conf \
     file://wpa_psk \
     file://vantageos-hostapd.service \
     file://vantageos-router.service \
@@ -36,6 +39,8 @@ do_install() {
     install -m 0644 ${UNPACKDIR}/10-vantageos-routing.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/10-alfa-wlan.link ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/25-wlan1.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/26-wlan0.network ${D}${sysconfdir}/systemd/network/
+    install -m 0644 ${UNPACKDIR}/29-br-vlan20.netdev ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/30-vlan5-quarantine.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/31-vlan10-trusted.network ${D}${sysconfdir}/systemd/network/
     install -m 0644 ${UNPACKDIR}/32-vlan20-guest.network ${D}${sysconfdir}/systemd/network/
@@ -55,6 +60,8 @@ do_install() {
     # Install hostapd config
     install -d ${D}${sysconfdir}/hostapd
     install -m 0644 ${UNPACKDIR}/hostapd.conf ${D}${sysconfdir}/hostapd/vantageos-hostapd.conf
+    # 0600: carries wpa_passphrase in plaintext, same as hostapd.conf's wpa_psk
+    install -m 0600 ${UNPACKDIR}/hostapd-guest.conf ${D}${sysconfdir}/hostapd/vantageos-hostapd-guest.conf
     install -m 0600 ${UNPACKDIR}/wpa_psk ${D}${sysconfdir}/hostapd/wpa_psk
 
     # Install routing setup script
@@ -81,6 +88,8 @@ FILES:${PN} = " \
     ${sysconfdir}/systemd/network/10-vantageos-routing.network \
     ${sysconfdir}/systemd/network/10-alfa-wlan.link \
     ${sysconfdir}/systemd/network/25-wlan1.network \
+    ${sysconfdir}/systemd/network/26-wlan0.network \
+    ${sysconfdir}/systemd/network/29-br-vlan20.netdev \
     ${sysconfdir}/systemd/network/30-vlan5-quarantine.network \
     ${sysconfdir}/systemd/network/31-vlan10-trusted.network \
     ${sysconfdir}/systemd/network/32-vlan20-guest.network \
@@ -91,6 +100,7 @@ FILES:${PN} = " \
     ${sysconfdir}/dnsmasq.d/vantageos.conf \
     ${sysconfdir}/sysctl.d/90-vantageos-router.conf \
     ${sysconfdir}/hostapd/vantageos-hostapd.conf \
+    ${sysconfdir}/hostapd/vantageos-hostapd-guest.conf \
     ${sysconfdir}/hostapd/wpa_psk \
     ${sysconfdir}/vantageos-routing-installed \
     ${bindir}/vantageos-routing-setup \
