@@ -7,7 +7,7 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r15"
+PR = "r16"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
@@ -29,6 +29,7 @@ SRC_URI = " \
     file://vantageos-hostapd.service \
     file://vantageos-router.service \
     file://routing-setup.sh \
+    file://vantageos.nft \
 "
 
 do_install() {
@@ -63,7 +64,11 @@ do_install() {
     # Install routing setup script
     install -d ${D}${bindir}
     install -m 0755 ${UNPACKDIR}/routing-setup.sh ${D}${bindir}/vantageos-routing-setup
-    
+
+    # Install declarative nftables ruleset (loaded by the script above)
+    install -d ${D}${sysconfdir}/nftables.d
+    install -m 0644 ${UNPACKDIR}/vantageos.nft ${D}${sysconfdir}/nftables.d/vantageos.nft
+
     # Install systemd services
     install -d ${D}${systemd_system_unitdir}
     install -d ${D}${systemd_system_unitdir}/dnsmasq.service.d
@@ -98,6 +103,7 @@ FILES:${PN} = " \
     ${sysconfdir}/hostapd/wpa_psk \
     ${sysconfdir}/vantageos-routing-installed \
     ${bindir}/vantageos-routing-setup \
+    ${sysconfdir}/nftables.d/vantageos.nft \
     ${systemd_system_unitdir}/dnsmasq.service.d/10-vantageos.conf \
     ${systemd_system_unitdir}/vantageos-hostapd.service \
     ${systemd_system_unitdir}/vantageos-router.service \
@@ -107,8 +113,7 @@ RDEPENDS:${PN} = " \
     iproute2 \
     hostapd \
     dnsmasq \
-    iptables \
-    ipset \
+    nftables \
 "
 
 SYSTEMD_SERVICE:${PN} = "vantageos-hostapd.service vantageos-router.service"

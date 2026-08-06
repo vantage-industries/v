@@ -40,6 +40,9 @@ IMAGE_INSTALL = " \
     linux-firmware-rtl8852 \
     rtw89-usb \
     iw \
+    net-snmp-server-snmpd \
+    net-snmp-client \
+    openssl \
 "
 # packagegroup-base-extended
 

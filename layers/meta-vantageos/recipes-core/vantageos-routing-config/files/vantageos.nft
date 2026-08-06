@@ -1,0 +1,227 @@
+#!/usr/sbin/nft -f
+#
+# VantageOS firewall/NAT ruleset -- declarative nftables config, loaded
+# wholesale by vantageos-routing-setup via `nft -f`. This file defines the
+# complete desired state of the "vantageos" table; `flush ruleset` at the
+# top makes reloading it idempotent (safe on boot, safe on manual re-run)
+# without needing per-rule existence checks.
+#
+# $wan_iface and $admin_ip are runtime-configurable (VANTAGEOS_WAN_IFACE /
+# VANTAGEOS_ADMIN_IP) and are defined by the generated include below, not
+# in this file -- everything else here is static.
+flush ruleset
+
+include "/run/vantageos-nft-runtime.nft"
+
+define ha_ip = 192.168.60.10  # Home Assistant / NVR controller -- the one
+                               # host in Services the doc grants active
+                               # (not just replied-to) cross-VLAN reach.
+
+define br5  = br-vlan5   # Quarantine / onboarding
+define br10 = br-vlan10  # Trusted
+# Guest lives on its own physical radio (wlan0), routed not bridged --
+# brcmfmac (onboard Pi 5 radio) rejects bridge enslavement outright, so
+# unlike every other VLAN below this one is a plain interface, matched by
+# name exactly like eth0/tailscale0 are. Everything else about VLAN20
+# (rules, dnsmasq scope, bandwidth cap) is otherwise unchanged.
+define br20 = wlan0      # Guest
+define br30 = br-vlan30  # Cloud Native
+define br40 = br-vlan40  # CAM
+define br50 = br-vlan50  # IoT offline / hybrid
+define br60 = br-vlan60  # Services (HA, NVR)
+
+table ip vantageos {
+    # Self-expiring, per-device egress exceptions. Populated externally (the
+    # onboarding UI on approval, a CAM per-device exception, the IoT update
+    # job) via: nft add element ip vantageos <name> "{ <device-ip> timeout <seconds>s }"
+    set quarantine_window {
+        type ipv4_addr
+        flags timeout
+    }
+
+    set cam_window {
+        type ipv4_addr
+        flags timeout
+    }
+
+    set iot_window {
+        type ipv4_addr
+        flags timeout
+    }
+
+    # Cloud Native appliance egress allow-list.
+    # Populate with resolved IPs of vendor domains; empty by default so
+    # nothing is allowed until an admin explicitly lists appliance
+    # destinations.
+    set cloud_allow {
+        type ipv4_addr
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+
+        # NAT: masquerade LAN -> WAN uplink.
+        oifname $wan_iface masquerade
+    }
+
+    chain forward {
+        # Default policy: ACCEPT everything not explicitly dropped below.
+        # (a hard default-drop policy here was tried and never got working
+        # reliably enough to ship -- everything below relies on explicit
+        # drop rules instead.)
+        type filter hook forward priority filter; policy accept;
+
+        # Global: accept return traffic everywhere (WAN<->LAN and
+        # inter-VLAN alike) with one rule instead of one per pair. This is
+        # also the mechanism behind the matrix's core property: "zaden
+        # segment nie inicjuje polaczen do Trusted -- tylko ruch powrotny"
+        ct state established,related accept
+
+        # -- VLAN 5: Quarantine / onboarding --
+        # Zero lateral movement; internet only inside the onboarding
+        # window; the hub itself is reachable for DNS/DHCP/NTP only (input
+        # chain, below).
+        iifname $br5 oifname $br10 drop
+        iifname $br5 oifname $br20 drop
+        iifname $br5 oifname $br30 drop
+        iifname $br5 oifname $br40 drop
+        iifname $br5 oifname $br50 drop
+        iifname $br5 oifname $br60 drop
+        iifname $br5 oifname $wan_iface ip saddr @quarantine_window accept
+        iifname $br5 oifname $wan_iface drop
+
+        # -- VLAN 10: Trusted --
+        # Highest trust: full egress, kamera podglad, dashboard HA. No rule
+        # needed for intra-VLAN traffic -- that's the same bridge (L2),
+        # never routed.
+        iifname $br10 oifname $wan_iface accept
+        iifname $br10 oifname $br40 tcp dport {554,8800,443} accept
+        iifname $br10 oifname $br60 ip daddr $ha_ip tcp dport {8123,443} accept
+        iifname $br10 oifname $br20 drop
+        iifname $br10 oifname $br30 drop
+        iifname $br10 oifname $br5 drop
+
+        # -- VLAN 20: Guest --
+        # Password-only, no fingerprinting/classification, no captive
+        # portal. Full isolation from internal VLANs; internet allowed but
+        # ping blocked; bandwidth capped separately via tc/HTB+fq_codel.
+        iifname $br20 oifname $br5 drop
+        iifname $br20 oifname $br10 drop
+        iifname $br20 oifname $br30 drop
+        iifname $br20 oifname $br40 drop
+        iifname $br20 oifname $br50 drop
+        iifname $br20 oifname $br60 drop
+        iifname $br20 icmp type echo-request drop
+        iifname $br20 oifname $wan_iface accept
+
+        # -- VLAN 30: Cloud Native --
+        # Egress-only: nothing from any other VLAN reaches in. Appliance
+        # profile gets a hard allow-list (cloud_allow set above); everything
+        # else on 30 (the "media" profile -- TV/streaming, too many CDNs to
+        # allow-list) gets wide :443 egress with anomalous-port traffic
+        # logged and dropped.
+        iifname $br30 oifname $br5 drop
+        iifname $br30 oifname $br10 drop
+        iifname $br30 oifname $br20 drop
+        iifname $br30 oifname $br40 drop
+        iifname $br30 oifname $br50 drop
+        iifname $br30 oifname $br60 drop
+        iifname $br30 oifname $wan_iface tcp dport 443 ip daddr @cloud_allow accept
+        iifname $br30 oifname $wan_iface tcp dport 443 accept
+        iifname $br30 oifname $wan_iface log prefix "CLOUD-EGRESS-ANOMALY "
+        iifname $br30 oifname $wan_iface drop
+
+        # -- VLAN 40: CAM --
+        # Recording devices: never dial out to any other VLAN on their own
+        # initiative (replies still flow via the global established,related
+        # rule), except the push/MQTT exception to the Services controller;
+        # no internet except a per-device window; nothing opens WAN->CAM (no
+        # rule does, so the default accept-otherwise-drop-explicitly design
+        # covers "zero port-forwarding, zero UPnP").
+        iifname $br40 oifname $br60 ip daddr $ha_ip tcp dport {1883,8123} accept
+        iifname $br40 oifname $br5 drop
+        iifname $br40 oifname $br10 drop
+        iifname $br40 oifname $br20 drop
+        iifname $br40 oifname $br30 drop
+        iifname $br40 oifname $br50 drop
+        iifname $br40 oifname $br60 drop
+        iifname $br40 oifname $wan_iface ip saddr @cam_window accept
+        iifname $br40 oifname $wan_iface drop
+
+        # -- VLAN 50: IoT offline / hybrid --
+        # Locally controlled devices: internet only inside an update
+        # window; control inbound only from the Services controller
+        # (allowed from the 60 side, below); push/MQTT out to the Services
+        # controller.
+        iifname $br50 oifname $br60 ip daddr $ha_ip tcp dport {1883,8123} accept
+        iifname $br50 oifname $br5 drop
+        iifname $br50 oifname $br10 drop
+        iifname $br50 oifname $br20 drop
+        iifname $br50 oifname $br30 drop
+        iifname $br50 oifname $br40 drop
+        iifname $br50 oifname $br60 drop
+        iifname $br50 oifname $wan_iface ip saddr @iot_window accept
+        iifname $br50 oifname $wan_iface drop
+
+        # -- VLAN 60: Services / Controller --
+        # Control-plane host: actively pushes control/streams to IoT and
+        # CAM, reaches the internet for updates; no Cloud30 talk-back; no
+        # unsolicited inbound from WAN (remote access = WireGuard,
+        # configured elsewhere).
+        iifname $br60 ip saddr $ha_ip oifname $br50 tcp dport {80,443} accept
+        iifname $br60 ip saddr $ha_ip oifname $br40 tcp dport {554,8800} accept
+        iifname $br60 oifname $br5 drop
+        iifname $br60 oifname $br10 drop
+        iifname $br60 oifname $br20 drop
+        iifname $br60 oifname $br30 drop
+        iifname $br60 oifname $br40 drop
+        iifname $br60 oifname $br50 drop
+        iifname $br60 ip saddr $ha_ip oifname $wan_iface tcp dport 443 accept
+        iifname $br60 oifname $wan_iface drop
+    }
+
+    chain input {
+        # The hub is the firewall for every VLAN, so its own control
+        # surface gets the three controls from SS6: bind-by-VLAN
+        # (source-bridge gate below), admin-host allow-list ($admin_ip,
+        # defaults to "any" when VANTAGEOS_ADMIN_IP isn't set), and a hard
+        # input chain where every other VLAN reaches only DNS/DHCP/NTP.
+        type filter hook input priority filter; policy accept;
+
+        iifname lo accept
+        ct state established,related accept
+
+        iifname $br5  udp dport {53,67,123} accept
+        iifname $br5  tcp dport 53 accept
+        iifname $br10 udp dport {53,67,123} accept
+        iifname $br10 tcp dport 53 accept
+        iifname $br20 udp dport {53,67,123} accept
+        iifname $br20 tcp dport 53 accept
+        iifname $br30 udp dport {53,67,123} accept
+        iifname $br30 tcp dport 53 accept
+        iifname $br40 udp dport {53,67,123} accept
+        iifname $br40 tcp dport 53 accept
+        iifname $br50 udp dport {53,67,123} accept
+        iifname $br50 tcp dport 53 accept
+        iifname $br60 udp dport {53,67,123} accept
+        iifname $br60 tcp dport 53 accept
+
+        iifname $br10 ip saddr $admin_ip tcp dport {22,443} accept
+
+        # Tailscale admin -- full trust, any port. New inbound connections
+        # over the tailnet don't match the established,related rule above
+        # (that only covers replies), so without this they'd hit the
+        # default input drop even though tailscaled itself reports the node
+        # as connected.
+        iifname tailscale0 accept
+
+        # eth0/WAN_IFACE admin trust -- test-rig only: in this setup eth0
+        # isn't real WAN, so the router itself trusts anything arriving on
+        # it directly. input-only: this does NOT add a forward accept, so a
+        # brand-new connection arriving on eth0 still can't reach into any
+        # VLAN -- forward still only ever accepts established,related for
+        # traffic that didn't originate on a VLAN bridge. Revisit this rule
+        # before eth0 is ever real WAN.
+        iifname $wan_iface accept
+    }
+}
