@@ -2,4 +2,3 @@
 # Wildcard MAC (00:00:00:00:00:00) matches any station whose PSK isn't
 # matched by a more specific entry below -> quarantine VLAN 5 by default.
 vlanid=5 00:00:00:00:00:00 8iOqbZnqFasxPvITqCP1
-vlanid=10 98:2C:BC:9F:00:A1 8iOqbZnqFasxPvITqCP2

@@ -45,6 +45,7 @@ IMAGE_INSTALL = " \
     net-snmp-server-snmpd \
     net-snmp-client \
     openssl \
+    openssl-bin \
     logrotate \
 "
 # packagegroup-base-extended
