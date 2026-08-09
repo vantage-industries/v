@@ -71,6 +71,17 @@ table ip vantageos {
         # drop rules instead.)
         type filter hook forward priority filter; policy accept;
 
+        # IoT (VLAN50) established/related traffic is carved out of the
+        # global fast-path below *before* it applies, so Suricata (inline,
+        # NFQUEUE, see suricata's bbappend) sees the whole flow instead of
+        # just the first packet -- most signatures (HTTP bodies, TLS SNI,
+        # DNS query content...) need more than a SYN to match. Admission for
+        # brand-new IoT connections is still decided entirely by the
+        # explicit accept/drop rules in the VLAN 50 section further down;
+        # this only concerns packets belonging to a flow already admitted.
+        ip saddr 192.168.50.0/24 ct state established,related queue num 0 bypass
+        ip daddr 192.168.50.0/24 ct state established,related queue num 0 bypass
+
         # Global: accept return traffic everywhere (WAN<->LAN and
         # inter-VLAN alike) with one rule instead of one per pair. This is
         # also the mechanism behind the matrix's core property: "zaden
@@ -152,16 +163,29 @@ table ip vantageos {
         # Locally controlled devices: internet only inside an update
         # window; control inbound only from the Services controller
         # (allowed from the 60 side, below); push/MQTT out to the Services
-        # controller.
-        iifname $br50 oifname $br60 ip daddr $ha_ip tcp dport {1883,8123} accept
+        # controller. Admission (accept/drop) is still decided here exactly
+        # as before -- the two `accept` cases now hand off to Suricata
+        # (queue 0, bypass = fail-open if the engine isn't up) instead of
+        # accepting outright, so inline IPS only ever sees traffic this
+        # ruleset already decided to permit.
+        iifname $br50 oifname $br60 ip daddr $ha_ip tcp dport {1883,8123} queue num 0 bypass
         iifname $br50 oifname $br5 drop
         iifname $br50 oifname $br10 drop
         iifname $br50 oifname $br20 drop
         iifname $br50 oifname $br30 drop
         iifname $br50 oifname $br40 drop
         iifname $br50 oifname $br60 drop
-        iifname $br50 oifname $wan_iface ip saddr @iot_window accept
+        iifname $br50 oifname $wan_iface ip saddr @iot_window queue num 0 bypass
         iifname $br50 oifname $wan_iface drop
+
+        # Device-to-device (same-bridge) IoT traffic: normally pure L2
+        # switching, invisible to netfilter entirely. bridge-nf-call-iptables
+        # (91-vantageos-suricata.conf) pushes it through this hook too, but
+        # iifname/oifname for it are the individual bridge ports, not
+        # br-vlan50 itself -- match by subnet instead. Everything crossing a
+        # VLAN/WAN boundary was already handled by the rules above; only
+        # genuine intra-VLAN traffic reaches this line.
+        ip saddr 192.168.50.0/24 ip daddr 192.168.50.0/24 queue num 0 bypass
 
         # -- VLAN 60: Services / Controller --
         # Control-plane host: actively pushes control/streams to IoT and

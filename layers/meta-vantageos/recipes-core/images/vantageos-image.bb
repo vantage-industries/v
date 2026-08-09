@@ -2,6 +2,8 @@ SUMMARY = "VantageOS base image"
 DESCRIPTION = "Custom Linux image for VantageOS devices"
 LICENSE = "MIT"
 
+IMAGE_ROOTFS_EXTRA_SPACE = "10485760"
+
 inherit core-image
 inherit extrausers
 
@@ -26,7 +28,7 @@ IMAGE_INSTALL = " \
     packagegroup-core-boot \
     packagegroup-base-extended \
     vantageos-routing-config \
-    vantageos-suricata-config \
+    vantageos-suricata-rules \
     dropbear \
     dnsmasq \
     iptables \
@@ -43,6 +45,7 @@ IMAGE_INSTALL = " \
     net-snmp-server-snmpd \
     net-snmp-client \
     openssl \
+    logrotate \
 "
 # packagegroup-base-extended
 
@@ -121,6 +124,7 @@ SYSTEMD_AUTO_ENABLE:hostapd = "disable"
 SYSTEMD_AUTO_ENABLE:wpa-supplicant = "disable"
 SYSTEMD_AUTO_ENABLE:nginx = "enable"
 SYSTEMD_AUTO_ENABLE:tailscaled = "${@bb.utils.contains('VANTAGEOS_ENABLE_TAILSCALE', '1', 'enable', 'disable', d)}"
+SYSTEMD_AUTO_ENABLE:logrotate.timer = "enable"
 INITSCRIPT_PACKAGES:append = " dropbear"
 INITSCRIPT_NAME:dropbear = "dropbear"
 INITSCRIPT_PARAMS:dropbear = "defaults 10"
