@@ -113,27 +113,13 @@ do_install() {
     install -m 0644 ${UNPACKDIR}/security-hub-smoke-test.service ${D}${systemd_system_unitdir}/security-hub-smoke-test.service
     install -m 0644 ${UNPACKDIR}/security-hub-smoke-test.timer ${D}${systemd_system_unitdir}/security-hub-smoke-test.timer
 
-    # security-hub/backend's own deploy/vantageos-api.service ships ExecStart=/usr/bin/security_hub,
-    # which matches neither this recipe's binary name nor the Makefile's own bin/securityhub-api --
-    # an upstream inconsistency. Patched here on a copy, at install time, in the working directory
-    # only; deploy/vantageos-api.service inside the submodule is never touched.
-    # ReadWritePaths patch: ProtectSystem=strict makes the whole filesystem read-only for the
-    # unprivileged service process except what's listed here. Upstream's unit only lists
-    # /var/lib/securityhub and /tmp -- the reconciler also needs to write dnsmasq reservations
-    # (/etc/dnsmasq.d) and the hostapd PSK file (/etc/hostapd), and hostapd_cli (shelled out to
-    # by internal/system/linux/hostapd.go) needs to create its own client control socket inside
-    # /run/hostapd (ctrl_interface_group=securityhub in hostapd.conf was already set up to allow
-    # exactly this at the POSIX layer -- ReadWritePaths= was the missing piece). Without the
-    # first two, every reconcile cycle fails with "read-only file system" and the firewall
-    # ruleset never gets Confirm()ed, so it flaps apply/revert on a ~90s loop.
-    sed \
-        -e 's#^ExecStart=.*#ExecStart=${bindir}/security-hub-api#' \
-        -e '/^ExecStart=/a ExecStartPre=+/bin/chgrp securityhub /etc/hostapd\nExecStartPre=+/bin/chmod 0775 /etc/hostapd\nExecStartPre=+/bin/chgrp securityhub /etc/hostapd/wpa_psk\nExecStartPre=+/bin/chmod 0660 /etc/hostapd/wpa_psk\nExecStartPre=+/bin/chgrp securityhub /etc/dnsmasq.d\nExecStartPre=+/bin/chmod 0775 /etc/dnsmasq.d\nEnvironmentFile=-/etc/securityhub/device_key.env' \
-        -e 's#^Conflicts=vantageos-router.service#After=vantageos-router.service#' \
-        -e '/^After=vantageos-router.service/a Requires=security-hub-keygen.service\nAfter=security-hub-keygen.service' \
-        -e 's#^ReadWritePaths=.*#ReadWritePaths=/var/lib/securityhub /tmp /etc/dnsmasq.d /etc/hostapd /run/hostapd#' \
-        ${SECURITY_HUB_BACKEND_SRC}/deploy/vantageos-api.service > ${WORKDIR}/security-hub-api.service.patched
-    install -m 0644 ${WORKDIR}/security-hub-api.service.patched ${D}${systemd_system_unitdir}/security-hub-api.service
+    # security-hub/backend's own deploy/vantageos-api.service is packaged as-is -- it already
+    # carries the correct ExecStart binary name, the hostapd/dnsmasq ExecStartPre ownership
+    # fixups, the security-hub-keygen.service ordering, and the ReadWritePaths needed under
+    # ProtectSystem=strict. See that repo's deploy/vantageos-api.service for the rationale
+    # (previously carried here as a build-time sed patch; moved upstream so the unit under
+    # version control matches what actually ships).
+    install -m 0644 ${SECURITY_HUB_BACKEND_SRC}/deploy/vantageos-api.service ${D}${systemd_system_unitdir}/security-hub-api.service
 }
 
 FILES:${PN} = " \

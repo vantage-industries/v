@@ -37,7 +37,7 @@ do_install:append() {
     # a single-space pattern here previously left that line undeleted and a
     # second, wrongly-relative entry got appended alongside it.
     sed -i -e '/^rule-files:/,/^classification-file:/{/^[[:space:]]*- /d; /^# - /d}' \
-           -e '/^rule-files:/a\ - ${sysconfdir}/suricata/rules/suricata.rules' \
+           -e '/^rule-files:/a\ - ${sysconfdir}/suricata/rules/suricata.rules\n - ${sysconfdir}/suricata/rules/local.rules' \
            ${D}${sysconfdir}/suricata/suricata.yaml
 
     # nfnetlink_queue: feeds -q 0 above. br_netfilter: makes traffic between
