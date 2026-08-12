@@ -1,0 +1,10 @@
+[Unit]
+Description=Poll for SecurityHub owner bootstrap, then run the smoke test once
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Unit=security-hub-smoke-test.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the SecurityHub API smoke test (once, after operator bootstrap)
+Documentation=https://github.com/vantage-industries/security-hub
+# Ordering only -- the runner itself probes /api/v1/setup/status and no-ops (exit 0) if the
+# API isn't answering yet, so this must not pull security-hub-api.service into (re)starting.
+After=security-hub-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/security-hub-smoke-test-runner.sh

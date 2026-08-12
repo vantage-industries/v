@@ -1,5 +1,14 @@
 # VantageOS Architecture and Implementation Plan
 
+> **Superseded.** This document describes the original `control-plane/` app (5 GHz only,
+> `Main`/`IoT` zones, QR onboarding, Nix-flake packaging) — retired and replaced by
+> **security-hub** (8-VLAN segmentation, quarantine-first classification, full IAAA), packaged
+> by `v/layers/meta-vantageos/recipes-core/security-hub/vantageos-security-hub.bb`. Kept as a
+> historical record of the v1 design; do not use it as current documentation. For the real
+> architecture, see `v/security-hub/backend/CLAUDE.md` and
+> `v/security-hub/backend/SYSTEM-INTEGRATION.md` (both inside the `security-hub` submodule),
+> and `yocto/PROJECT_MAP.md` for how it's wired into this Yocto tree.
+
 ## Goal
 
 VantageOS is a security-focused router appliance for Raspberry Pi 5.

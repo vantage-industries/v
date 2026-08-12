@@ -1,5 +1,10 @@
 # VantageOS Implementation Checklist
 
+> **Superseded.** This tracker is for the original `control-plane/` app described in
+> `architecture.md`, retired in favor of **security-hub**. Kept as a historical record; none of
+> these items are being worked toward any more. security-hub tracks its own progress in
+> `v/security-hub/backend/SYSTEM-INTEGRATION.md` (Steps 1-9) inside the submodule.
+
 This is the working tracker for implementation. Check items off only after they are built and verified.
 
 ## Scope Freeze

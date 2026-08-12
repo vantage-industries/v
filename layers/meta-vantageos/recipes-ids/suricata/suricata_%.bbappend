@@ -25,9 +25,19 @@ do_install:append() {
     sed -i '/^nfq:$/a\  mode: accept\n  fail-open: yes' ${D}${sysconfdir}/suricata/suricata.yaml
 
     # Single vendored ruleset (vantageos-suricata-rules) instead of the
-    # upstream ET-classic file list, none of which we ship.
-    sed -i -e '/^rule-files:/,/^classification-file:/{/^ - /d; /^# - /d}' \
-           -e '/^rule-files:/a\ - suricata.rules' \
+    # upstream ET-classic file list, none of which we ship. Absolute path here
+    # (not a bare filename) so this doesn't depend on default-rule-path, which
+    # is left at its upstream default (/var/lib/suricata/rules) and does not
+    # match where vantageos-suricata-rules.bb actually installs the file
+    # (${sysconfdir}/suricata/rules) -- confirmed on-device (2026-08-11) that
+    # a bare "suricata.rules" entry resolves against default-rule-path and
+    # silently loads zero rules. [[:space:]]* (not a literal single space) in
+    # the delete pattern so it actually matches the upstream template's
+    # existing "  - suricata.rules" entry regardless of its indent width --
+    # a single-space pattern here previously left that line undeleted and a
+    # second, wrongly-relative entry got appended alongside it.
+    sed -i -e '/^rule-files:/,/^classification-file:/{/^[[:space:]]*- /d; /^# - /d}' \
+           -e '/^rule-files:/a\ - ${sysconfdir}/suricata/rules/suricata.rules' \
            ${D}${sysconfdir}/suricata/suricata.yaml
 
     # nfnetlink_queue: feeds -q 0 above. br_netfilter: makes traffic between

@@ -7,7 +7,7 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r17"
+PR = "r19"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
@@ -111,6 +111,7 @@ FILES:${PN} = " \
 
 RDEPENDS:${PN} = " \
     iproute2 \
+    iproute2-tc \
     hostapd \
     dnsmasq \
     nftables \

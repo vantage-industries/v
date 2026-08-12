@@ -1,0 +1,15 @@
+[Unit]
+Description=Generate the SecurityHub nginx TLS certificate (self-signed)
+Documentation=https://github.com/vantage-industries/security-hub
+# nginx's ssl_certificate/ssl_certificate_key directives are evaluated at its own startup --
+# the cert must exist before nginx.service starts, or nginx fails to come up at all.
+ConditionPathExists=!/etc/nginx/ssl/securityhub.crt
+Before=nginx.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/security-hub-generate-cert.sh
+
+[Install]
+WantedBy=multi-user.target

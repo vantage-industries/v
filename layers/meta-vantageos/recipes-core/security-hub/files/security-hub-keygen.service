@@ -1,0 +1,17 @@
+[Unit]
+Description=Generate the SecurityHub device key (CSRF signing / TOTP-at-rest key material)
+Documentation=https://github.com/vantage-industries/security-hub
+# Shipping the repo's dev placeholder secrets.device_key in production would mean every
+# VantageOS device signs CSRF tokens and encrypts TOTP secrets with the same publicly-known
+# key (security-hub/backend's own config.Validate refuses to boot on that placeholder outside
+# development). This unit runs once, before the API ever starts, and never again.
+ConditionPathExists=!/etc/securityhub/device_key.env
+Before=security-hub-api.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'umask 077; install -d /etc/securityhub; printf "SECURITYHUB_SECRETS_DEVICE_KEY=%s\n" "$(head -c32 /dev/urandom | base64)" > /etc/securityhub/device_key.env'
+
+[Install]
+WantedBy=multi-user.target

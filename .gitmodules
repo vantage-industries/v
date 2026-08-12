@@ -4,3 +4,10 @@
 [submodule "layers/meta-openembedded"]
 	path = layers/meta-openembedded
 	url = https://github.com/openembedded/meta-openembedded.git
+[submodule "security-hub/backend"]
+	path = security-hub/backend
+	url = git@github.com:vantage-industries/security-hub.git
+	branch = dev
+[submodule "security-hub/frontend"]
+	path = security-hub/frontend
+	url = git@github.com:vantage-industries/frontend_security_hub.git

@@ -21,6 +21,7 @@ VANTAGEOS_ENABLE_TAILSCALE ?= "0"
 VANTAGEOS_ENABLE_CAPTIVE_PORTAL ?= "1"
 VANTAGEOS_PORTAL_HOSTNAME ?= "vantageos.local"
 VANTAGEOS_PORTAL_IP ?= "192.168.88.1"
+VANTAGEOS_TIMEZONE ?= "Europe/Warsaw"
 
 MACHINE_FEATURES:remove = "alsa"
 
@@ -32,7 +33,7 @@ IMAGE_INSTALL = " \
     dropbear \
     dnsmasq \
     iptables \
-    vantageos-control-plane \
+    vantageos-security-hub \
     suricata \
     hostapd \
     kernel-modules \
@@ -47,6 +48,7 @@ IMAGE_INSTALL = " \
     openssl \
     openssl-bin \
     logrotate \
+    tzdata \
 "
 # packagegroup-base-extended
 
@@ -73,6 +75,12 @@ vantageos_configure_dev_access() {
     fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "vantageos_configure_dev_access;"
+
+vantageos_configure_timezone() {
+    ln -sf /usr/share/zoneinfo/${VANTAGEOS_TIMEZONE} ${IMAGE_ROOTFS}${sysconfdir}/localtime
+    echo "${VANTAGEOS_TIMEZONE}" > ${IMAGE_ROOTFS}${sysconfdir}/timezone
+}
+ROOTFS_POSTPROCESS_COMMAND += "vantageos_configure_timezone;"
 
 vantageos_configure_portal() {
     if [ "${VANTAGEOS_ENABLE_CAPTIVE_PORTAL}" != "1" ]; then
