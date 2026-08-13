@@ -9,7 +9,6 @@ inherit externalsrc systemd goarch useradd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI = " \
-    file://config.yaml \
     file://security-hub-keygen.service \
     file://nginx/security-hub.conf \
     file://nginx/security-hub-api.conf \
@@ -89,7 +88,14 @@ do_install() {
     install -m 0755 ${B}/security-hub-api ${D}${bindir}/security-hub-api
 
     install -d ${D}${sysconfdir}/securityhub
-    install -m 0644 ${UNPACKDIR}/config.yaml ${D}${sysconfdir}/securityhub/config.yaml
+    # security-hub/backend's own deploy/config.production.yaml, vendored as-is like
+    # vantageos-api.service above -- destination filename must stay config.yaml, since
+    # internal/config/config.go hardcodes v.SetConfigName("config") (viper looks for
+    # <workingdir>/config.yaml; WorkingDirectory=/etc/securityhub in vantageos-api.service).
+    # A missing/misnamed file is NOT a fatal error there (ConfigFileNotFoundError is
+    # swallowed) -- it silently falls back to defaults (environment=development, mock
+    # backend), so getting this filename wrong fails silent, not loud.
+    install -m 0644 ${SECURITY_HUB_BACKEND_SRC}/deploy/config.production.yaml ${D}${sysconfdir}/securityhub/config.yaml
 
     install -d ${D}${sysconfdir}/nginx/conf.d ${D}${sysconfdir}/nginx/snippets
     install -m 0644 ${UNPACKDIR}/nginx/security-hub.conf ${D}${sysconfdir}/nginx/conf.d/security-hub.conf

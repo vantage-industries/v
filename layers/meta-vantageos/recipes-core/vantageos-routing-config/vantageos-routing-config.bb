@@ -7,7 +7,7 @@ inherit systemd
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # Bump PR to force rebuild
-PR = "r19"
+PR = "r20"
 
 SRC_URI = " \
     file://10-vantageos-routing.network \
@@ -59,7 +59,18 @@ do_install() {
     install -m 0644 ${UNPACKDIR}/hostapd.conf ${D}${sysconfdir}/hostapd/vantageos-hostapd.conf
     # 0600: carries wpa_passphrase in plaintext, same as hostapd.conf's wpa_psk
     install -m 0600 ${UNPACKDIR}/hostapd-guest.conf ${D}${sysconfdir}/hostapd/vantageos-hostapd-guest.conf
-    install -m 0600 ${UNPACKDIR}/wpa_psk ${D}${sysconfdir}/hostapd/wpa_psk
+
+    # Seed files security-hub-api renders over at runtime, at the path its own
+    # config.production.yaml declares (system.paths.hostapd_psk_file / dnsmasq_reservations).
+    # Laid down here (root:root) because hostapd/dnsmasq must have something valid to read on
+    # first boot, before security-hub-api ever starts; security-hub-api's own ExecStartPre
+    # (deploy/vantageos-api.service) chgrp/chmods both to securityhub:securityhub 0660 at every
+    # start, same pattern as the old /etc/hostapd/wpa_psk location used.
+    install -d ${D}/var/lib/securityhub/rendered
+    install -m 0600 ${UNPACKDIR}/wpa_psk ${D}/var/lib/securityhub/rendered/wpa-psk
+    # Empty: no reservations exist until security-hub-api renders its first generation.
+    # dhcp-hostsfile= (dnsmasq.conf) just needs the file to exist at startup.
+    install -m 0600 /dev/null ${D}/var/lib/securityhub/rendered/reservations
 
     # Install routing setup script
     install -d ${D}${bindir}
@@ -100,7 +111,8 @@ FILES:${PN} = " \
     ${sysconfdir}/sysctl.d/90-vantageos-router.conf \
     ${sysconfdir}/hostapd/vantageos-hostapd.conf \
     ${sysconfdir}/hostapd/vantageos-hostapd-guest.conf \
-    ${sysconfdir}/hostapd/wpa_psk \
+    /var/lib/securityhub/rendered/wpa-psk \
+    /var/lib/securityhub/rendered/reservations \
     ${sysconfdir}/vantageos-routing-installed \
     ${bindir}/vantageos-routing-setup \
     ${sysconfdir}/nftables.d/vantageos.nft \
