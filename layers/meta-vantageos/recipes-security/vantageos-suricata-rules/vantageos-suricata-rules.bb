@@ -6,7 +6,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 # Hand-curated, edited outside the build as research turns up new IoT/IPS
 # signatures -- bump PR whenever files/suricata.rules changes so a rebuild
 # actually picks it up.
-PR = "r2"
+PR = "r4"
 
 SRC_URI = "file://suricata.rules file://local.rules"
 

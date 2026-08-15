@@ -39,7 +39,7 @@ DEPENDS = "nodejs-native go-native"
 # recipe actually exercises should be declared here rather than borrowed from the image recipe.
 RDEPENDS:${PN} = "nginx openssl-bin"
 
-# System account the API runs as (deploy/vantageos-api.service: User=securityhub
+# System account the API runs as (deploy/security-hub-api.service: User=securityhub
 # Group=securityhub). No login, no home -- the unit only needs it for capability scoping.
 USERADD_PACKAGES = "${PN}"
 GROUPADD_PARAM:${PN} = "--system securityhub"
@@ -119,13 +119,14 @@ do_install() {
     install -m 0644 ${UNPACKDIR}/security-hub-smoke-test.service ${D}${systemd_system_unitdir}/security-hub-smoke-test.service
     install -m 0644 ${UNPACKDIR}/security-hub-smoke-test.timer ${D}${systemd_system_unitdir}/security-hub-smoke-test.timer
 
-    # security-hub/backend's own deploy/vantageos-api.service is packaged as-is -- it already
+    # security-hub/backend's own deploy/security-hub-api.service is packaged as-is -- it already
     # carries the correct ExecStart binary name, the hostapd/dnsmasq ExecStartPre ownership
     # fixups, the security-hub-keygen.service ordering, and the ReadWritePaths needed under
-    # ProtectSystem=strict. See that repo's deploy/vantageos-api.service for the rationale
+    # ProtectSystem=strict. See that repo's deploy/security-hub-api.service for the rationale
     # (previously carried here as a build-time sed patch; moved upstream so the unit under
-    # version control matches what actually ships).
-    install -m 0644 ${SECURITY_HUB_BACKEND_SRC}/deploy/vantageos-api.service ${D}${systemd_system_unitdir}/security-hub-api.service
+    # version control matches what actually ships). Renamed from vantageos-api.service upstream
+    # in commit f14317b ("Updated config files for embeded yocto packages", 2026-08-14).
+    install -m 0644 ${SECURITY_HUB_BACKEND_SRC}/deploy/security-hub-api.service ${D}${systemd_system_unitdir}/security-hub-api.service
 }
 
 FILES:${PN} = " \

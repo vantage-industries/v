@@ -1,0 +1,14 @@
+# --- possible Nmap scan detection ---
+# Flag-based rules match the exact TCP flag combination nmap sends for that
+# scan type. The SYN rule additionally checks for an unusually small TCP
+# window (raw byte_test on tcp.hdr offset 14, the window field, since the
+# plain `window` keyword only supports exact match, not "<") -- real OS TCP
+# stacks essentially never advertise below ~2048 on an initial SYN, while
+# raw-crafted scan probes commonly do. Threshold: 2048 is a provisional
+# value, to be confirmed/tuned against a captured real nmap SYN once tested
+# (pcap-log temporarily enabled on the Pi for that).
+alert tcp any any -> $HOME_NET any (msg:"POSSIBLE NMAP Scan"; flags:0; threshold:type both, track by_src, count 5, seconds 60; classtype:attempted-recon; sid:1000010; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"POSSIBLE NMAP Scan"; flags:F; threshold:type both, track by_src, count 5, seconds 60; classtype:attempted-recon; sid:1000011; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"POSSIBLE NMAP Scan"; flags:FPU; threshold:type both, track by_src, count 5, seconds 60; classtype:attempted-recon; sid:1000012; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"POSSIBLE NMAP Scan"; flags:A; ack:0; threshold:type both, track by_src, count 5, seconds 60; classtype:attempted-recon; sid:1000013; rev:2;)
+alert tcp any any -> $HOME_NET any (msg:"POSSIBLE NMAP Scan (small TCP window)"; flags:S; tcp.hdr; byte_test:2,<,2048,14,big; threshold:type both, track by_src, count 5, seconds 60; classtype:attempted-recon; sid:1000015; rev:1;)
