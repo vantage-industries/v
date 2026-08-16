@@ -49,6 +49,7 @@ IMAGE_INSTALL = " \
     openssl-bin \
     logrotate \
     tzdata \
+    ca-certificates \
 "
 # packagegroup-base-extended
 
