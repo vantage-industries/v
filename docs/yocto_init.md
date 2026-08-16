@@ -1,3 +1,7 @@
+> **Notatka robocza.** Uporządkowana, aktualna dokumentacja jest w
+> [`DOKUMENTACJA.md`](DOKUMENTACJA.md) (sekcja "Szybki start"). Ten plik zostaje jako
+> zapis procesu nauki przy pierwszym buildzie.
+
 # inicjalizacja projektu yocto
 zaczynamy od https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html
 

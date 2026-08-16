@@ -1,3 +1,7 @@
+> **Notatka robocza.** Uporządkowana, aktualna dokumentacja jest w
+> [`DOKUMENTACJA.md`](DOKUMENTACJA.md) (sekcja "Rozwiązywanie problemów"). Ten plik
+> zostaje jako zapis procesu nauki.
+
 # Wprowadzenie
 Stworzłem to Q&A ze wzgędu na kilka rzeczy ktore nie poszly idealnie
 

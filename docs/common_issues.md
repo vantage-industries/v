@@ -1,3 +1,7 @@
+> **Notatka robocza.** Uporządkowana, aktualna dokumentacja jest w
+> [`DOKUMENTACJA.md`](DOKUMENTACJA.md) (sekcja "Rozwiązywanie problemów"). Ten plik
+> zostaje jako zapis procesu nauki.
+
 # Wprowadzenie
 Podczas pierwszego builda Yocto nie miałem problemów, ale bezmyślnie jechałem po kolei i nie rozumiałem, w jaki sposób ten proces powinien przebiegać. Za drugim razem nie obyło się bez błędów, więc zostawiam to dla potomnych.
 
