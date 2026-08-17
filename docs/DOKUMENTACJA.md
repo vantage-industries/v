@@ -1,4 +1,4 @@
-# Dokumentacja projektu VantageOS (Yocto)
+i # Dokumentacja projektu VantageOS (Yocto)
 
 > Ten dokument jest głównym, aktualnym źródłem wiedzy o warstwie Yocto projektu VantageOS.
 > Konsoliduje i porządkuje wcześniejsze, rozrzucone notatki z tego katalogu
